@@ -16,13 +16,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window?.rootViewController = viewController
         window?.makeKeyAndVisible()
         
-        
-        let addrs1 = try? DNSLookup.lookup(hostname: "all.api.radio-browser.info")
-        print("lookup: \(addrs1)")
-        
-        let addrs2 = try? DNSLookup.lookup(hostname: "www.naver.com")
-        print("lookup: \(addrs2)")
-        
         return true
     }
 
