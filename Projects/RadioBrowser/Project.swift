@@ -34,4 +34,7 @@ let targets = Project.makeFrameworkTargets(name: name,
                                      dependencies: [])
 let project = Project(name: name,
                       organizationName: organization,
+                      packages: [
+                        .package(url: "https://github.com/Moya/Moya", from: "15.0.0")
+                      ],
                       targets: targets)

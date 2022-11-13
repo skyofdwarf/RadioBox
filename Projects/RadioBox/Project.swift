@@ -36,4 +36,10 @@ let targets = Project.makeAppTargets(name: name,
                                      dependencies: dependencies)
 let project = Project(name: name,
                       organizationName: organization,
+                      packages: [
+                        .package(url: "https://github.com/freshOS/Stevia", from: "5.1.0"),
+                        .package(url: "https://github.com/onevcat/Kingfisher", from: "7.0.0"),
+                        .package(url: "https://github.com/devxoul/Then", from: "2.0.0"),
+                        .package(url: "https://github.com/skyofdwarf/RDXVM", from: "0.9.0")
+                      ],
                       targets: targets)
