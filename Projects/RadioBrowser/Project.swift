@@ -27,11 +27,16 @@ let name = "RadioBrowser"
 let organization =  "dwarfini"
 let bundleIdPrefix = "com.dwarfini"
 
+let dependencies: [TargetDependency] = [
+    .package(product: "Moya"),
+    .package(product: "CombineMoya"),
+]
+
 // Creates our project using a helper function defined in ProjectDescriptionHelpers
 let targets = Project.makeFrameworkTargets(name: name,
                                      bundleIdPredix: bundleIdPrefix,
                                      platform: .iOS,
-                                     dependencies: [])
+                                     dependencies: dependencies)
 let project = Project(name: name,
                       organizationName: organization,
                       packages: [

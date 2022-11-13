@@ -28,7 +28,13 @@ let organization =  "dwarfini"
 let bundleIdPrefix = "com.dwarfini"
 
 // Creates our project using a helper function defined in ProjectDescriptionHelpers
-let dependencies: [TargetDependency] = [ .project(target: "RadioBrowser", path: .relativeToRoot("Projects/RadioBrowser")) ]
+let dependencies: [TargetDependency] = [
+    .project(target: "RadioBrowser", path: .relativeToRoot("Projects/RadioBrowser")),
+    .package(product: "Stevia"),
+    .package(product: "Kingfisher"),
+    .package(product: "Then"),
+    .package(product: "RDXVM"),
+]
 
 let targets = Project.makeAppTargets(name: name,
                                      bundleIdPredix: bundleIdPrefix,
