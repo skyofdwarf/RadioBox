@@ -48,5 +48,30 @@ final class RadioBrowserTests: XCTestCase {
         let api = StubBrowser()
         let options: [SearchStationOptions] = [ .limit(1) ]
         let _: [RadioBrowserStation] = try await api.request(RadioBrowserTarget.allStations(options))
-    }    
+    }
+    
+    func test_target_voteStation() async throws {
+        let api = StubBrowser()
+        let _: RadioBrowserVoteStationResponse = try await api.request(RadioBrowserTarget.voteStation("no station"))
+    }
+    
+    func test_target_clickStation() async throws {
+        let api = StubBrowser()
+        let _: RadioBrowserClickStationResponse = try await api.request(RadioBrowserTarget.clickStation("no station"))
+    }
+    
+    func test_target_recentClickStations() async throws {
+        let api = StubBrowser()
+        let _: [RadioBrowserStation] = try await api.request(RadioBrowserTarget.recentClickStations(offset: 0, limit: 1))
+    }
+    
+    func test_target_mostClickedStations() async throws {
+        let api = StubBrowser()
+        let _: [RadioBrowserStation] = try await api.request(RadioBrowserTarget.mostClickedStations(offset: 0, limit: 1))
+    }
+    
+    func test_target_mostVotedStations() async throws {
+        let api = StubBrowser()
+        let _: [RadioBrowserStation] = try await api.request(RadioBrowserTarget.mostVotedStations(offset: 0, limit: 1))
+    }
 }

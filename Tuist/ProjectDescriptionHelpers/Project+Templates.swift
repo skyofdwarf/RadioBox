@@ -30,7 +30,7 @@ extension Project {
     }
 
     /// Helper function to create the application target and the unit test target.
-    public static func makeAppTargets(name: String, bundleIdPredix: String, platform: Platform, dependencies: [TargetDependency]) -> [Target] {
+    public static func makeAppTargets(name: String, bundleIdPredix: String, platform: Platform, scripts: [TargetScript] = [], dependencies: [TargetDependency]) -> [Target] {
         let platform: Platform = platform
         let infoPlist: [String: InfoPlist.Value] = [
             "CFBundleShortVersionString": "1.0",
@@ -48,6 +48,7 @@ extension Project {
             infoPlist: .extendingDefault(with: infoPlist),
             sources: ["Sources/**"],
             resources: ["Resources/**"],
+            scripts: scripts,
             dependencies: dependencies
         )
 
