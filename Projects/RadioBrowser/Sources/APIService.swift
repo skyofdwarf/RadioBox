@@ -11,7 +11,7 @@ import Moya
 import CombineMoya
 import Combine
 
-public class APIService {
+open class APIService {
     let provider: MoyaProvider<MultiTarget>
     
     public init(provider: MoyaProvider<MultiTarget> = MoyaProvider<MultiTarget>()) {

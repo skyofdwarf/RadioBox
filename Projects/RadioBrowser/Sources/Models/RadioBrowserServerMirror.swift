@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct RadioBrowserServerMirror: Decodable {
+public struct RadioBrowserServerMirror: Decodable {
     let ip: String
     let name: String
 }

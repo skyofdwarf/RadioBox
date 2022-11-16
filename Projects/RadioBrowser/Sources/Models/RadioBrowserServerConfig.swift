@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct RadioBrowserServerConfig: Decodable {
+public struct RadioBrowserServerConfig: Decodable {
     let check_enabled: Bool
     let prometheus_exporter_enabled: Bool
     let pull_servers: [String]

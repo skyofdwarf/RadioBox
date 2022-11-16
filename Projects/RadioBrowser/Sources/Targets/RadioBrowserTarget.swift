@@ -9,7 +9,7 @@
 import Foundation
 import Moya
 
-enum RadioBrowserTarget: TargetType {
+public enum RadioBrowserTarget: TargetType {
     case allStations([SearchStationOptions])
     case searchStation([SearchStationOptions])
     
@@ -25,10 +25,10 @@ enum RadioBrowserTarget: TargetType {
     case mostVotedStations(offset: Int, limit: Int)
     
     /// The target's base `URL`.
-    var baseURL: URL { URL(string: "http://all.api.radio-browser.info")! }
+    public var baseURL: URL { URL(string: "http://all.api.radio-browser.info")! }
 
     /// The path to be appended to `baseURL` to form the full `URL`.
-    var path: String {
+    public var path: String {
         switch self {
         case .allStations: return "json/stations"
         case .searchStation: return "json/stations/search"
@@ -45,10 +45,10 @@ enum RadioBrowserTarget: TargetType {
     }
 
     /// The HTTP method used in the request.
-    var method: Moya.Method { .get }
+    public var method: Moya.Method { .get }
 
     /// The type of HTTP task to be performed.
-    var task: Task {
+    public var task: Task {
         switch self {
         case .allStations(let options), .searchStation(let options):
             let params = options.map(\.parameter).reduce(into: [:]) { acc, dict in
@@ -69,13 +69,13 @@ enum RadioBrowserTarget: TargetType {
     }
     
     /// The type of validation to perform on the request. Default is `.none`.
-    var validationType: ValidationType { .none }
+    public var validationType: ValidationType { .none }
 
     /// The headers to be used in the request.
-    var headers: [String: String]? { nil }
+    public var headers: [String: String]? { nil }
 }
 
-extension RadioBrowserTarget {
+public extension RadioBrowserTarget {
     /// Provides stub data for use in testing. Default is `Data()`.
     var sampleData: Data {
         switch self {

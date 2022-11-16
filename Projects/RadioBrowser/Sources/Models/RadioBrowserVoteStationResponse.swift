@@ -8,8 +8,7 @@
 
 import Foundation
 
-
-struct RadioBrowserVoteStationResponse: Decodable {
+public struct RadioBrowserVoteStationResponse: Decodable {
     let ok: Bool
     let message: String
 }

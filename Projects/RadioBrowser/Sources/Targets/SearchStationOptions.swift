@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum SearchStationOptions {
+public enum SearchStationOptions {
     case name(String)
     case tag(String)
     case countrycode(String)

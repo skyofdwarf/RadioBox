@@ -8,8 +8,7 @@
 
 import Foundation
 
-
-struct RadioBrowserClickStationResponse: Decodable {
+public struct RadioBrowserClickStationResponse: Decodable {
     let ok: Bool
     let message: String
     let stationuuid: String

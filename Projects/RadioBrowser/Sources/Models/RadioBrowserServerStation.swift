@@ -7,7 +7,8 @@
 //
 
 import Foundation
-struct RadioBrowserStation: Decodable {    
+
+public struct RadioBrowserStation: Decodable {    
     let changeuuid: String
     let stationuuid: String
     let name: String

@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct RadioBrowserServerState: Decodable {
+public struct RadioBrowserServerState: Decodable {
     let supported_version: Int
     let software_version: String
     let status: String

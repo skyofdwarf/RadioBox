@@ -3,8 +3,8 @@ import Moya
 
 // https://api.radio-browser.info/
 
-public final class RadioBrowser: APIService {
-    public init(userAgent: String = "RadioBox/0.1.0") {
+open class RadioBrowser: APIService {
+    public convenience init(userAgent: String = "RadioBox/0.1.0") {
 #if DEBUG
         let plugins: [PluginType] = [
             NetworkLoggerPlugin(configuration: .init(logOptions: .verbose)),
@@ -25,6 +25,6 @@ public final class RadioBrowser: APIService {
         let provider = MoyaProvider<MultiTarget>(endpointClosure: endpointClosure,
                                                  plugins: plugins)
         
-        super.init(provider: provider)
+        self.init(provider: provider)
     }
 }
