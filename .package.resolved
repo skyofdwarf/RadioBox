@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/skyofdwarf/RDXVM",
       "state" : {
-        "revision" : "4075709736a0cfbff16a1a0484645839c0ba1c36",
-        "version" : "0.9.1"
+        "branch" : "develop",
+        "revision" : "4ad1d7e0c43ff605935319e9a8796efdf9f68577"
       }
     },
     {
