@@ -23,7 +23,7 @@ class SettingsViewController: UIViewController {
     init() {
         super.init(nibName: nil, bundle: nil)
         
-        tabBarItem = UITabBarItem(title: nil,
+        tabBarItem = UITabBarItem(title: "Settings",
                                   image: UIImage(systemName: "gear"),
                                   tag: 0)
     }

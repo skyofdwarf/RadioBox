@@ -46,7 +46,8 @@ final class LookupViewModel: ViewModel<LookupAction, LookupMutation, LookupEvent
         self.coordinator = coordinator
         
         super.init(state: LookupState(),
-                   eventMiddlewares: [coordinator.middleware()])
+                   eventMiddlewares: [Self.coordinating(coordinator)]
+        )
     }
     
     override func react(action: Action, state: State) -> Observable<Reaction> {
@@ -79,6 +80,17 @@ final class LookupViewModel: ViewModel<LookupAction, LookupMutation, LookupEvent
             state.fetching = fetching
         case .hostnames(let hostnames):
             state.hostnames = hostnames
+        }
+    }
+}
+
+extension LookupViewModel {
+    static func coordinating(_ coordinator: LookupCoordinator) -> EventMiddleware {
+        middleware.event { store, next, event in
+            if case let .coordinate(location) = event {
+                coordinator.coordinate(location)
+            }
+            return next(event)
         }
     }
 }

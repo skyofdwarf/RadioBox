@@ -16,13 +16,24 @@ enum AppAction {
 }
 
 enum AppMutation {
+    case hostname(String)
 }
 
 enum AppEvent {
     case coordinate(AppCoordinator.Location)
 }
 
+struct PlayContext {
+    var station: RadioBrowserStation
+    var cover: String?
+    var title: String?
+}
+
 struct AppState {
+    var hostname: String?
+    
+    var playing = false
+    var playContext: PlayContext?
 }
 
 extension UIApplication {
@@ -48,5 +59,9 @@ final class AppModel: ViewModel<AppAction, AppMutation, AppEvent, AppState> {
     }
     
     override  func reduce(mutation: Mutation, state: inout State) {
+        switch mutation {
+        case .hostname(let hostname):
+            state.hostname = hostname
+        }
     }
 }

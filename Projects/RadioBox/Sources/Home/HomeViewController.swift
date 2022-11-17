@@ -11,10 +11,13 @@ import Stevia
 import RxSwift
 import RxRelay
 import RxCocoa
+import RadioBrowser
 
 class HomeViewController: UIViewController {
-    let radioImageView = UIImageView(image: UIImage(systemName: "antenna.radiowaves.left.and.right"))
     let indicatorView = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.large)
+    var cv: UICollectionView!
+    
+    private var dataSource: UICollectionViewDiffableDataSource<Section, RadioStation>!
     
     var vm: HomeViewModel!
     var dbag = DisposeBag()
@@ -22,7 +25,9 @@ class HomeViewController: UIViewController {
     init() {
         super.init(nibName: nil, bundle: nil)
         
-        tabBarItem = UITabBarItem(title: nil,
+        title = "RadioBox"
+        
+        tabBarItem = UITabBarItem(title: "Home",
                                   image: UIImage(systemName: "dot.radiowaves.left.and.right"),
                                   tag: 0)
     }
@@ -37,35 +42,168 @@ class HomeViewController: UIViewController {
         view.backgroundColor = .systemBackground
         
         configureSubviews()
-        layoutSubviews()
         bindViewModel()
         
-//        vm.send(action: .lookup)
+        vm.send(action: .ready)
     }
     
     func configureSubviews() {
-        radioImageView.contentMode = .scaleAspectFit
         indicatorView.color = .red
         indicatorView.hidesWhenStopped = true
+        
+        cv = UICollectionView(frame: view.bounds, collectionViewLayout: Self.createCollectionViewLayout())
+        dataSource = createDataSource()
+        
+        layoutSubviews()
     }
     
     func layoutSubviews() {
-        view.subviews {
-            radioImageView
+        view.subviews(
+            cv,
             indicatorView
-        }
+        )
         
         view.layout {
-            radioImageView.size(200)
-            |-indicatorView-|
         }
         
-        radioImageView.centerInContainer()
+        cv.fillContainer()
+        indicatorView.centerInContainer()
     }
     
     func bindViewModel() {
         vm.state.$fetching
             .drive(indicatorView.rx.isAnimating)
             .disposed(by: dbag)
+        
+        vm.state.$stations
+            .asObservable()
+            .withUnretained(self)
+            .bind(onNext: { vc, stations in
+                vc.applyDataSource(stations: stations)
+            })
+        
+            .disposed(by: dbag)
+    }
+}
+
+// MARK: CollectioNView
+
+extension HomeViewController {
+    enum Section: Int, CaseIterable {
+        case mostVoted
+        
+        var title: String {
+            switch self {
+            case .mostVoted: return "Most voted"
+            }
+        }
+               
+        enum Item {
+            case station(RadioStation)
+        }
+    }
+    
+    func createDataSource() -> UICollectionViewDiffableDataSource<Section, RadioStation> {
+        let stationCellRegistration = UICollectionView.CellRegistration<StationCell, RadioStation>
+        { (cell, indexPath, station) in
+            cell.configure(station: station)
+        }
+        
+        return UICollectionViewDiffableDataSource(collectionView: cv)
+        { (collectionView, indexPath, identifier) in
+            guard let section = Section(rawValue: indexPath.section) else { return nil }
+            
+            switch section {
+            case .mostVoted:
+                return collectionView.dequeueConfiguredReusableCell(using: stationCellRegistration, for: indexPath, item: identifier)
+            }
+        }.then {
+            let headerRegistration = UICollectionView.SupplementaryRegistration<StationSectionHeaderView>(elementKind: UICollectionView.elementKindSectionHeader) {
+                (view, kind, indexPath) in
+                
+                guard let section = Section(rawValue: indexPath.section) else { return }
+                
+                view.configure(title: section.title)
+            }
+            
+            $0.supplementaryViewProvider = { (cv, kind, indexPath) in
+                return cv.dequeueConfiguredReusableSupplementary(using: headerRegistration, for: indexPath)
+            }
+        }
+    }
+    
+    func applyDataSource(stations: [RadioStation]) {
+        var snapshot = NSDiffableDataSourceSnapshot<Section, RadioStation>()
+        
+        snapshot.appendSections(Section.allCases)
+        
+        snapshot.appendItems(stations, toSection: .mostVoted)
+        
+        dataSource.apply(snapshot, animatingDifferences: false)
+    }
+}
+
+extension HomeViewController {
+    static func createCollectionViewLayout() -> UICollectionViewCompositionalLayout {
+        return UICollectionViewCompositionalLayout { section, environment in
+            switch Section(rawValue: section) {
+            case .mostVoted:
+                return verticalStationList()
+            default:
+                fatalError("No definition for section \(section)")
+            }
+        }
+    }
+    
+    
+    static func horizontalStationList() -> NSCollectionLayoutSection {
+        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
+                                              heightDimension: .fractionalHeight(1))
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        
+        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.4),
+                                               heightDimension: .fractionalWidth(0.4*1.5))
+        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+        
+        return NSCollectionLayoutSection(group: group).then {
+            $0.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 10, bottom: 0, trailing: 10)
+            $0.interGroupSpacing = 10
+            $0.orthogonalScrollingBehavior = .continuous
+            
+            let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
+                                                    heightDimension: .absolute(40))
+            let sectionHeader = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize,
+                                                                            elementKind: UICollectionView.elementKindSectionHeader, alignment: .top)
+            $0.boundarySupplementaryItems = [sectionHeader]
+        }
+    }
+    
+    static func verticalStationList() -> NSCollectionLayoutSection {
+        let sectionInset = 10.0
+        let itemSpacing = 5.0
+        let itemCountInLIne = 3.0
+        let contentWidth = UIScreen.main.bounds.width - (sectionInset * 2)
+        let itemWidth = ceil((contentWidth - (itemSpacing * (itemCountInLIne - 1))) / itemCountInLIne)
+        
+        let itemSize = NSCollectionLayoutSize(widthDimension: .absolute(itemWidth),
+                                              heightDimension: .absolute(itemWidth + 30))
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        
+        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
+                                               heightDimension: .absolute(itemWidth + 30))
+        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+        
+        group.interItemSpacing = .flexible(itemSpacing)
+        
+        return NSCollectionLayoutSection(group: group).then {
+            $0.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: sectionInset, bottom: 0, trailing: sectionInset)
+            $0.interGroupSpacing = 6
+            
+            let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
+                                                    heightDimension: .absolute(40))
+            let sectionHeader = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize,
+                                                                            elementKind: UICollectionView.elementKindSectionHeader, alignment: .top)
+            $0.boundarySupplementaryItems = [sectionHeader]
+        }
     }
 }

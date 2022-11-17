@@ -27,8 +27,8 @@ final class LookupCoordinator {
 
     static func start(window: UIWindow) {
         let vc = LookupViewController()
-        let c = Self.init(window: window, vc: vc)
-        let vm = LookupViewModel(coordinator: c)
+        let coordinator = Self.init(window: window, vc: vc)
+        let vm = LookupViewModel(coordinator: coordinator)
 
         vc.vm = vm
         
@@ -39,17 +39,9 @@ final class LookupCoordinator {
     func coordinate(_ location: Location) {
         switch location {
         case .home(let hostname):
-            MainCoordinator.start(window: window)
-        }
-    }
-    
-    func middleware() -> LookupViewModel.EventMiddleware {
-        LookupViewModel.middleware.event { [weak self] store, next, event in
-            if case let .coordinate(location) = event {
-                self?.coordinate(location)
+            if let url = URL(string: "https://\(hostname)") {
+                MainCoordinator.start(window: window, serverURL: url)
             }
-            
-            return next(event)
         }
-    }
+    }    
 }

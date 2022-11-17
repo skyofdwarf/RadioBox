@@ -23,7 +23,7 @@ class SearchViewController: UIViewController {
     init() {
         super.init(nibName: nil, bundle: nil)
         
-        tabBarItem = UITabBarItem(title: nil,
+        tabBarItem = UITabBarItem(title: "Search",
                                   image: UIImage(systemName: "magnifyingglass.circle"),
                                   tag: 0)
     }

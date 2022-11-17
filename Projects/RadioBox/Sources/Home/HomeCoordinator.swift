@@ -11,7 +11,6 @@ import RDXVM
 
 final class HomeCoordinator {
     enum Location {
-        case home(String)
     }
     
     unowned let vc: HomeViewController
@@ -20,10 +19,10 @@ final class HomeCoordinator {
         self.vc = vc
     }
     
-    static func start() -> HomeViewController {
+    static func start(service: RadioService) -> HomeViewController {
         let vc = HomeViewController()
-        let c = Self.init(vc: vc)
-        let vm = HomeViewModel(coordinator: c)
+        let coordinator = Self.init(vc: vc)
+        let vm = HomeViewModel(service: service, coordinator: coordinator)
         
         vc.vm = vm
         
@@ -32,19 +31,6 @@ final class HomeCoordinator {
     
     func coordinate(_ location: Location) {
         switch location {
-        case .home(let hostname):
-            //MainCoordinator(window: window).start()
-            return
-        }
-    }
-    
-    func middleware() -> HomeViewModel.EventMiddleware {
-        HomeViewModel.middleware.event { [weak self] store, next, event in
-            if case let .coordinate(location) = event {
-                self?.coordinate(location)
-            }
-            
-            return next(event)
         }
     }
 }

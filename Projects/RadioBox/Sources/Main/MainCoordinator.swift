@@ -7,11 +7,13 @@
 //
 
 import UIKit
-
+import RxCocoa
 final class MainCoordinator {
-    static func start(window: UIWindow) {
+    static func start(window: UIWindow, serverURL: URL) {
+        let service = RadioService(baseURL: serverURL)
+        
         let vc = MainViewController().then {
-            $0.viewControllers = [ HomeCoordinator.start(),
+            $0.viewControllers = [ HomeCoordinator.start(service: service),
                                    SearchCoordinator.start(),
                                    SettingsCoordinator.start(),
             ].map { $0.navigationRooted }

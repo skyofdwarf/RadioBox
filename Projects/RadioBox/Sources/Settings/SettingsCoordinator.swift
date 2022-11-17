@@ -11,7 +11,6 @@ import UIKit
 
 final class SettingsCoordinator {
     enum Location {
-        case home(String)
     }
     
     unowned let vc: SettingsViewController
@@ -22,11 +21,16 @@ final class SettingsCoordinator {
     
     static func start() -> SettingsViewController {
         let vc = SettingsViewController()
-        let c = Self.init(vc: vc)
-        let vm = SettingsViewModel(coordinator: c)
+        let coordinator = Self.init(vc: vc)
+        let vm = SettingsViewModel(coordinator: coordinator)
         
         vc.vm = vm
         
         return vc
+    }
+    
+    func coordinate(_ location: Location) {
+        switch location {
+        }
     }
 }

@@ -10,70 +10,77 @@ import UIKit
 import RDXVM
 import RadioBrowser
 import RxSwift
+import RxCocoa
+import Combine
+import Moya
 
 enum HomeAction {
-    case lookup
+    case ready
 }
 
 enum HomeMutation {
     case fetching(Bool)
-    case hostnames([String])
+    case stations([RadioStation])
 }
 
 enum HomeEvent {
     case coordinate(HomeCoordinator.Location)
-    case lookupFailed
-    case noHostname
 }
 
 struct HomeState {
     @Drived var fetching: Bool = false
-    @Drived var hostnames: [String] = []
+    @Drived var stations: [RadioStation] = []
 }
 
 final class HomeViewModel: ViewModel<HomeAction, HomeMutation, HomeEvent, HomeState> {
-    enum Constant {
-        static let urlToLookup = "all.api.radio-browser.info"
-    }
-    
+    let service: RadioService
     weak var coordinator: HomeCoordinator?
         
-    init(coordinator: HomeCoordinator) {
+    init(service: RadioService, coordinator: HomeCoordinator) {
+        self.service = service
         self.coordinator = coordinator
         
         super.init(state: HomeState(),
-                   eventMiddlewares: [coordinator.middleware()]
+                   eventMiddlewares: [Self.coordinating(coordinator)]
         )
     }
     
     override func react(action: Action, state: State) -> Observable<Reaction> {
         switch action {
-        case .lookup:
-            return Observable<Reaction>.create { observer in
-                do {
-                    let hostnames = try DNSLookup.reverseLookup(hostname: Constant.urlToLookup)
-                    if hostnames.isEmpty {
-                        observer.onNext(.event(.lookupFailed))
-                    } else {
-                        observer.onNext(.mutation(.hostnames(hostnames)))
-                        let hostname = hostnames.randomElement()!
-                        observer.onNext(.event(.coordinate(.home(hostname))))
-                    }
-                } catch {
-                    observer.onNext(.event(.lookupFailed))
-                }
-                observer.onCompleted()
-                return Disposables.create {}
+        case .ready:
+            return Observable<Reaction>.create { [weak self] observer in
+                self?.service.request(RadioBrowserTarget.mostVotedStations(offset: 0, limit: 10), success: { (stationDTOs: [RadioBrowserStation]) in
+                    let stations = stationDTOs.map(RadioStation.init(_:))
+                    observer.onNext(Reaction.mutation(.stations(stations)))
+                    observer.onCompleted()
+                }, failure: {
+                    observer.onNext(Reaction.error($0))
+                    observer.onCompleted()
+                })
+                return Disposables.create()
             }
+            .startWith(.mutation(.fetching(true)))
+            .concat(Observable<Reaction>.just(.mutation(.fetching(false))))
         }
     }
-    
+        
     override  func reduce(mutation: Mutation, state: inout State) {
         switch mutation {
         case .fetching(let fetching):
             state.fetching = fetching
-        case .hostnames(let hostnames):
-            state.hostnames = hostnames
+        case .stations(let stations):
+            state.stations = stations
+        }
+    }
+}
+
+extension HomeViewModel {
+    static func coordinating(_ coordinator: HomeCoordinator) -> EventMiddleware {
+        middleware.event { store, next, event in
+            if case let .coordinate(location) = event {
+                coordinator.coordinate(location)
+            }
+            return next(event)
         }
     }
 }

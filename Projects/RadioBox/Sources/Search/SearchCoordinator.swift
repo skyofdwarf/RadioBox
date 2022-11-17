@@ -7,10 +7,10 @@
 //
 
 import UIKit
+import RDXVM
 
 final class SearchCoordinator {
     enum Location {
-        case home(String)
     }
     
     unowned let vc: SearchViewController
@@ -21,11 +21,16 @@ final class SearchCoordinator {
     
     static func start() -> SearchViewController {
         let vc = SearchViewController()
-        let c = Self.init(vc: vc)
-        let vm = SearchViewModel(coordinator: c)
+        let coordinator = Self.init(vc: vc)
+        let vm = SearchViewModel(coordinator: coordinator)
         
         vc.vm = vm
         
         return vc
+    }
+    
+    func coordinate(_ location: Location) {
+        switch location {
+        }
     }
 }
