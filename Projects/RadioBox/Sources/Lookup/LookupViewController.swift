@@ -13,7 +13,7 @@ import RxRelay
 import RxCocoa
 
 class LookupViewController: UIViewController {
-    let radioImageView = UIImageView(image: UIImage(systemName: "dot.radiowaves.left.and.right"))
+    let radioImageView = UIImageView(image: UIImage(systemName: "radio"))
     let indicatorView = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.large)
     
     var vm: LookupViewModel!

@@ -17,8 +17,8 @@
                         <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="dot.radiowaves.left.and.right" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="CK1-Z7-1mq">
-                                <rect key="frame" x="95" y="323.66666666666669" width="200" height="196.99999999999997"/>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="radio" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="CK1-Z7-1mq">
+                                <rect key="frame" x="95" y="319.66666666666669" width="200" height="201"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="200" id="5iR-4d-Ikv"/>
                                     <constraint firstAttribute="height" constant="200" id="Aac-fW-DB8"/>
@@ -39,7 +39,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="dot.radiowaves.left.and.right" catalog="system" width="128" height="91"/>
+        <image name="radio" catalog="system" width="128" height="115"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
