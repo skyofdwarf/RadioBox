@@ -9,6 +9,6 @@
 import Foundation
 
 public struct RadioBrowserServerMirror: Decodable {
-    let ip: String
-    let name: String
+    public let ip: String
+    public let name: String
 }

@@ -9,9 +9,9 @@
 import Foundation
 
 public struct RadioBrowserClickStationResponse: Decodable {
-    let ok: Bool
-    let message: String
-    let stationuuid: String
-    let name: String
-    let url: URL
+    public let ok: Bool
+    public let message: String
+    public let stationuuid: String
+    public let name: String
+    public let url: URL
 }

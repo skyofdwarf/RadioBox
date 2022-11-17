@@ -9,6 +9,6 @@
 import Foundation
 
 public struct RadioBrowserVoteStationResponse: Decodable {
-    let ok: Bool
-    let message: String
+    public let ok: Bool
+    public let message: String
 }

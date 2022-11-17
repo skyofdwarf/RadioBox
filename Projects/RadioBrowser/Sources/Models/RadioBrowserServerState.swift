@@ -9,14 +9,14 @@
 import Foundation
 
 public struct RadioBrowserServerState: Decodable {
-    let supported_version: Int
-    let software_version: String
-    let status: String
-    let stations: Int
-    let stations_broken: Int
-    let tags: Int
-    let clicks_last_hour: Int
-    let clicks_last_day: Int
-    let languages: Int
-    let countries: Int
+    public let supported_version: Int
+    public let software_version: String
+    public let status: String
+    public let stations: Int
+    public let stations_broken: Int
+    public let tags: Int
+    public let clicks_last_hour: Int
+    public let clicks_last_day: Int
+    public let languages: Int
+    public let countries: Int
 }
