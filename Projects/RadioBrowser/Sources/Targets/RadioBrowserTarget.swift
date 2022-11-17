@@ -36,11 +36,11 @@ public enum RadioBrowserTarget: TargetType {
         case .serverConfig: return "json/config"
         case .serverMirror: return "json/servers"
             
-        case .voteStation(let stationuuid): return "http://at1.api.radio-browser.info/json/vote/\(stationuuid)"
-        case .clickStation(let stationuuid): return "http://at1.api.radio-browser.info/json/url/\(stationuuid)"
-        case .recentClickStations: return "http://at1.api.radio-browser.info/json/stations/lastclick"
-        case .mostClickedStations: return "http://at1.api.radio-browser.info/json/stations/topclick"
-        case .mostVotedStations: return "http://at1.api.radio-browser.info/json/stations/topvote"
+        case .voteStation(let stationuuid): return "json/vote/\(stationuuid)"
+        case .clickStation(let stationuuid): return "json/url/\(stationuuid)"
+        case .recentClickStations: return "json/stations/lastclick"
+        case .mostClickedStations: return "json/stations/topclick"
+        case .mostVotedStations: return "json/stations/topvote"
         }
     }
 
