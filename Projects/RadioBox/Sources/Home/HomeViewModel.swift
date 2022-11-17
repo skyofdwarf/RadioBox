@@ -27,20 +27,28 @@ enum HomeEvent {
     case coordinate(HomeCoordinator.Location)
 }
 
+extension HomeEvent: Coordinating {
+    var location: HomeCoordinator.Location? {
+        switch self {
+        case .coordinate(let location): return location
+        default: return nil
+        }
+    }
+}
+
 struct HomeState {
     @Drived var fetching: Bool = false
     @Drived var stations: [RadioStation] = []
 }
 
-final class HomeViewModel: ViewModel<HomeAction, HomeMutation, HomeEvent, HomeState> {
+final class HomeViewModel: CoordinatingViewModel<HomeAction, HomeMutation, HomeEvent, HomeState> {
     let service: RadioService
-    weak var coordinator: HomeCoordinator?
         
-    init(service: RadioService, coordinator: HomeCoordinator) {
+    init<C: Coordinator>(service: RadioService, coordinator: C) where C.Location == Event.Location {
         self.service = service
-        self.coordinator = coordinator
         
-        super.init(state: HomeState(),
+        super.init(coordinator: coordinator,
+                   state: HomeState(),
                    eventMiddlewares: [Self.coordinating(coordinator)]
         )
     }
@@ -70,17 +78,6 @@ final class HomeViewModel: ViewModel<HomeAction, HomeMutation, HomeEvent, HomeSt
             state.fetching = fetching
         case .stations(let stations):
             state.stations = stations
-        }
-    }
-}
-
-extension HomeViewModel {
-    static func coordinating(_ coordinator: HomeCoordinator) -> EventMiddleware {
-        middleware.event { store, next, event in
-            if case let .coordinate(location) = event {
-                coordinator.coordinate(location)
-            }
-            return next(event)
         }
     }
 }

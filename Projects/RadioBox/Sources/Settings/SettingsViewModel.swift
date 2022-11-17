@@ -17,24 +17,26 @@ enum SettingsAction {
 enum SettingsMutation {
     case fetching(Bool)
 }
-
 enum SettingsEvent {
     case coordinate(SettingsCoordinator.Location)
+}
+
+extension SettingsEvent: Coordinating {
+    var location: SettingsCoordinator.Location? {
+        switch self {
+        case .coordinate(let location): return location
+        default: return nil
+        }
+    }
 }
 
 struct SettingsState {
     @Drived var fetching: Bool = false
 }
 
-final class SettingsViewModel: ViewModel<SettingsAction, SettingsMutation, SettingsEvent, SettingsState> {
-    weak var coordinator: SettingsCoordinator?
-        
-    init(coordinator: SettingsCoordinator) {
-        self.coordinator = coordinator
-        
-        super.init(state: State(),
-                   eventMiddlewares: [Self.coordinating(coordinator)]
-        )
+final class SettingsViewModel: CoordinatingViewModel<SettingsAction, SettingsMutation, SettingsEvent, SettingsState> {
+    init<C: Coordinator>(coordinator: C) where C.Location == Event.Location {
+        super.init(coordinator: coordinator, state: State())
     }
     
     override func react(action: Action, state: State) -> Observable<Reaction> {
@@ -46,17 +48,6 @@ final class SettingsViewModel: ViewModel<SettingsAction, SettingsMutation, Setti
         switch mutation {
         case .fetching(let fetching):
             state.fetching = fetching
-        }
-    }
-}
-
-extension SettingsViewModel {
-    static func coordinating(_ coordinator: SettingsCoordinator) -> EventMiddleware {
-        middleware.event { store, next, event in
-            if case let .coordinate(location) = event {
-                coordinator.coordinate(location)
-            }
-            return next(event)
         }
     }
 }

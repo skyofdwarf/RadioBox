@@ -9,7 +9,7 @@
 import UIKit
 import RDXVM
 
-final class SearchCoordinator {
+final class SearchCoordinator: Coordinator {
     enum Location {
     }
     

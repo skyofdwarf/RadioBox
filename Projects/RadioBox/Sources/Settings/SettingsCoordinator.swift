@@ -8,8 +8,7 @@
 
 import UIKit
 
-
-final class SettingsCoordinator {
+final class SettingsCoordinator: Coordinator {
     enum Location {
     }
     

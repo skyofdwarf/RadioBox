@@ -22,19 +22,22 @@ enum SearchEvent {
     case coordinate(SearchCoordinator.Location)
 }
 
+extension SearchEvent: Coordinating {
+    var location: SearchCoordinator.Location? {
+        switch self {
+        case .coordinate(let location): return location
+        default: return nil
+        }
+    }
+}
+
 struct SearchState {
     @Drived var fetching: Bool = false
 }
 
-final class SearchViewModel: ViewModel<SearchAction, SearchMutation, SearchEvent, SearchState> {
-    weak var coordinator: SearchCoordinator?
-        
-    init(coordinator: SearchCoordinator) {
-        self.coordinator = coordinator
-        
-        super.init(state: State(),
-                   eventMiddlewares: [Self.coordinating(coordinator)]
-        )
+final class SearchViewModel: CoordinatingViewModel<SearchAction, SearchMutation, SearchEvent, SearchState> {
+    init<C: Coordinator>(coordinator: C) where C.Location == Event.Location {
+        super.init(coordinator: coordinator, state: State())
     }
     
     override func react(action: Action, state: State) -> Observable<Reaction> {
@@ -46,17 +49,6 @@ final class SearchViewModel: ViewModel<SearchAction, SearchMutation, SearchEvent
         switch mutation {
         case .fetching(let fetching):
             state.fetching = fetching
-        }
-    }
-}
-
-extension SearchViewModel {
-    static func coordinating(_ coordinator: SearchCoordinator) -> EventMiddleware {
-        middleware.event { store, next, event in
-            if case let .coordinate(location) = event {
-                coordinator.coordinate(location)
-            }
-            return next(event)
         }
     }
 }

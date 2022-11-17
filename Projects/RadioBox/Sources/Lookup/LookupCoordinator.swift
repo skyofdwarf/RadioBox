@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class LookupCoordinator {
+final class LookupCoordinator: Coordinator {
     enum Location {
         case home(String)
     }
@@ -43,5 +43,5 @@ final class LookupCoordinator {
                 MainCoordinator.start(window: window, serverURL: url)
             }
         }
-    }    
+    }
 }

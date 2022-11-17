@@ -26,28 +26,27 @@ enum LookupEvent {
     case noHostname
 }
 
+extension LookupEvent: Coordinating {
+    var location: LookupCoordinator.Location? {
+        switch self {
+        case .coordinate(let location): return location
+        default: return nil
+        }
+    }
+}
+
 struct LookupState {
     @Drived var fetching: Bool = false
     @Drived var hostnames: [String] = []
 }
-
-final class LookupViewModel: ViewModel<LookupAction, LookupMutation, LookupEvent, LookupState> {
+    
+final class LookupViewModel: CoordinatingViewModel<LookupAction, LookupMutation, LookupEvent, LookupState> {
     enum Constant {
         static let urlToLookup = "all.api.radio-browser.info"
     }
     
-    let coordinator: LookupCoordinator
-    
-    deinit {
-        print("\(#file).\(#function)")
-    }
-    
-    init(coordinator: LookupCoordinator) {
-        self.coordinator = coordinator
-        
-        super.init(state: LookupState(),
-                   eventMiddlewares: [Self.coordinating(coordinator)]
-        )
+    init<C: Coordinator>(coordinator: C) where C.Location == Event.Location {
+        super.init(coordinator: coordinator, state: State())
     }
     
     override func react(action: Action, state: State) -> Observable<Reaction> {
@@ -80,17 +79,6 @@ final class LookupViewModel: ViewModel<LookupAction, LookupMutation, LookupEvent
             state.fetching = fetching
         case .hostnames(let hostnames):
             state.hostnames = hostnames
-        }
-    }
-}
-
-extension LookupViewModel {
-    static func coordinating(_ coordinator: LookupCoordinator) -> EventMiddleware {
-        middleware.event { store, next, event in
-            if case let .coordinate(location) = event {
-                coordinator.coordinate(location)
-            }
-            return next(event)
         }
     }
 }

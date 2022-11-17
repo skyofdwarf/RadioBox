@@ -9,7 +9,7 @@
 import UIKit
 import RDXVM
 
-final class HomeCoordinator {
+final class HomeCoordinator: Coordinator {
     enum Location {
     }
     
