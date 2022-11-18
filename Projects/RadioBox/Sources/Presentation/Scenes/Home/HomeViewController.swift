@@ -17,6 +17,8 @@ class HomeViewController: UIViewController {
     let indicatorView = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.large)
     var cv: UICollectionView!
     
+    let playerBar = PlayerBar()
+    
     private var dataSource: UICollectionViewDiffableDataSource<Section, RadioStation>!
     
     var vm: HomeViewModel!
@@ -41,7 +43,7 @@ class HomeViewController: UIViewController {
         
         view.backgroundColor = .systemBackground
         
-        configureSubviews()
+        configureSubviews()        
         bindViewModel()
         
         vm.send(action: .ready)
@@ -60,7 +62,8 @@ class HomeViewController: UIViewController {
     func layoutSubviews() {
         view.subviews(
             cv,
-            indicatorView
+            indicatorView,
+            playerBar
         )
         
         view.layout {
@@ -68,6 +71,14 @@ class HomeViewController: UIViewController {
         
         cv.fillContainer()
         indicatorView.centerInContainer()
+        
+        playerBar.fillHorizontally()
+        playerBar.Top == view.safeAreaLayoutGuide.Bottom
+        
+        additionalSafeAreaInsets = UIEdgeInsets(top: 0,
+                                                left: 0,
+                                                bottom: playerBar.intrinsicContentSize.height,
+                                                right: 0)
     }
     
     func bindViewModel() {
