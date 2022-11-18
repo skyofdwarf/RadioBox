@@ -12,7 +12,7 @@ import RadioBrowser
 import RxSwift
 
 enum AppAction {
-    case start(UIWindow)
+    case start
 }
 
 enum AppMutation {
@@ -21,6 +21,15 @@ enum AppMutation {
 
 enum AppEvent {
     case coordinate(AppCoordinator.Location)
+}
+
+extension AppEvent: Coordinating {
+    var location: AppCoordinator.Location? {
+        switch self {
+        case .coordinate(let location): return location
+        default: return nil
+        }
+    }
 }
 
 struct PlayContext {
@@ -36,25 +45,15 @@ struct AppState {
     var playContext: PlayContext?
 }
 
-extension UIApplication {
-    static let model = AppModel(coordinator: AppCoordinator())
-    var model: AppModel { Self.model }
-}
-
-final class AppModel: ViewModel<AppAction, AppMutation, AppEvent, AppState> {
-    let coordinator: AppCoordinator
-    
-    fileprivate init(coordinator: AppCoordinator) {
-        self.coordinator = coordinator
-        
-        super.init(state: AppState(),
-                   eventMiddlewares: [ coordinator.middleware() ])
+final class AppModel: CoordinatingViewModel<AppAction, AppMutation, AppEvent, AppState> {
+    init<C: Coordinator>(coordinator: C) where C.Location == Event.Location {
+        super.init(coordinator: coordinator, state: State())
     }
     
     override func react(action: Action, state: State) -> Observable<Reaction> {
         switch action {
-        case .start(let window):
-            return .just(.event(.coordinate(.lookup(window))))
+        case .start:
+            return .just(.event(.coordinate(.lookup)))
         }
     }
     

@@ -8,25 +8,22 @@
 
 import UIKit
 
-final class AppCoordinator {
+final class AppCoordinator: Coordinator {
     enum Location {
-        case lookup(UIWindow)
+        case lookup
     }
+    
+    let window: UIWindow = UIWindow(frame: UIScreen.main.bounds)
+    var vc: UIViewController? { window.rootViewController }
     
     func coordinate(_ location: Location) {
         switch location {
-        case .lookup(let window):
+        case .lookup:
             LookupCoordinator.start(window: window)
         }
     }
     
-    func middleware() -> AppModel.EventMiddleware {
-        AppModel.middleware.event { [weak self] store, next, event in
-            if case let .coordinate(location) = event {
-                self?.coordinate(location)
-            }
-            
-            return next(event)
-        }
+    func start() {
+        UIApplication.model.send(action: .start)
     }
 }
