@@ -43,9 +43,11 @@ struct HomeState {
 
 final class HomeViewModel: CoordinatingViewModel<HomeAction, HomeMutation, HomeEvent, HomeState> {
     let service: RadioService
+    let player: Player
         
-    init<C: Coordinator>(service: RadioService, coordinator: C) where C.Location == Event.Location {
+    init<C: Coordinator>(service: RadioService, coordinator: C, player: Player) where C.Location == Event.Location {
         self.service = service
+        self.player = player
         
         super.init(coordinator: coordinator,
                    state: HomeState(),

@@ -46,14 +46,17 @@ struct AppState {
 }
 
 final class AppModel: CoordinatingViewModel<AppAction, AppMutation, AppEvent, AppState> {
-    init<C: Coordinator>(coordinator: C) where C.Location == Event.Location {
+    let player: Player
+    init<C: Coordinator>(coordinator: C, player: Player) where C.Location == Event.Location {
+        self.player = player
+        
         super.init(coordinator: coordinator, state: State())
     }
     
     override func react(action: Action, state: State) -> Observable<Reaction> {
         switch action {
         case .start:
-            return .just(.event(.coordinate(.lookup)))
+            return .just(.event(.coordinate(.lookup(player))))
         }
     }
     

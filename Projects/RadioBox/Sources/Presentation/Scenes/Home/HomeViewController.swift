@@ -45,6 +45,7 @@ class HomeViewController: UIViewController {
         
         configureSubviews()        
         bindViewModel()
+        bindPlayer()
         
         vm.send(action: .ready)
     }
@@ -54,6 +55,8 @@ class HomeViewController: UIViewController {
         indicatorView.hidesWhenStopped = true
         
         cv = UICollectionView(frame: view.bounds, collectionViewLayout: Self.createCollectionViewLayout())
+        cv.delegate = self
+        
         dataSource = createDataSource()
         
         layoutSubviews()
@@ -94,6 +97,10 @@ class HomeViewController: UIViewController {
             })
         
             .disposed(by: dbag)
+    }
+    
+    func bindPlayer() {
+        playerBar.bind(player: vm.player)
     }
 }
 
@@ -153,6 +160,8 @@ extension HomeViewController {
         dataSource.apply(snapshot, animatingDifferences: false)
     }
 }
+
+// MARK: - CollectionView layouts
 
 extension HomeViewController {
     static func createCollectionViewLayout() -> UICollectionViewCompositionalLayout {
@@ -216,5 +225,17 @@ extension HomeViewController {
                                                                             elementKind: UICollectionView.elementKindSectionHeader, alignment: .top)
             $0.boundarySupplementaryItems = [sectionHeader]
         }
+    }
+}
+
+// MARK: - CollectionViewDelegate
+
+extension HomeViewController: UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard let station = dataSource.itemIdentifier(for: indexPath) else {
+            return
+        }
+        
+        vm.player.play(station: station)
     }
 }

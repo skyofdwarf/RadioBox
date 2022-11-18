@@ -27,7 +27,7 @@ class PlayerBar: UIToolbar {
     let faviconImageView: UIImageView
     let infoLabel: UILabel
     
-    private(set) var player: RadioPlayer?
+    var player: Player?
     
     private var dbag: [AnyCancellable] = []
     
@@ -66,32 +66,39 @@ class PlayerBar: UIToolbar {
     }
     
     func setup() {
-        playButton.setImage(PlayerStatus.stopped.image, for: .normal)
-        playButton.addAction(UIAction { [weak player] _ in player?.togglePlay() }, for: .touchUpInside)
-        
-        subviews {
-            faviconImageView
-            infoLabel
-            playButton
+        let action = UIAction { [weak self] _ in
+            self?.player?.toggle()
         }
         
-        layout {
+        playButton.setImage(PlayerStatus.stopped.image, for: .normal)
+        playButton.addAction(action, for: .touchUpInside)
+        
+        let container = UIView().then {
+            $0.clipsToBounds = true
+        }
+        
+        subviews {
+            container.subviews {
+                faviconImageView
+                infoLabel
+                playButton
+            }
+        }
+        
+        container.layout {
             0
             |faviconImageView-(infoLabel.top(0).bottom(0))-playButton|
             0
         }
+        
+        container.fillContainer()
     }
     
     func updatePlayButton(status: PlayerStatus) {
-        if let statusImage = status.image {
-            playButton.setImage(statusImage, for: .normal)
-            playButton.isEnabled = true
-        } else {
-            playButton.isEnabled = false
-        }
+        playButton.setImage(status.image, for: .normal)
     }
         
-    func bind(player: RadioPlayer) {
+    func bind(player: Player) {
         dbag = []
         self.player = player
         

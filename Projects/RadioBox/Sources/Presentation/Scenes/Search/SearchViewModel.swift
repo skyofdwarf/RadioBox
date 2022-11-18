@@ -36,7 +36,10 @@ struct SearchState {
 }
 
 final class SearchViewModel: CoordinatingViewModel<SearchAction, SearchMutation, SearchEvent, SearchState> {
-    init<C: Coordinator>(coordinator: C) where C.Location == Event.Location {
+    let player: Player
+    init<C: Coordinator>(coordinator: C, player: Player) where C.Location == Event.Location {
+        self.player = player
+        
         super.init(coordinator: coordinator, state: State())
     }
     

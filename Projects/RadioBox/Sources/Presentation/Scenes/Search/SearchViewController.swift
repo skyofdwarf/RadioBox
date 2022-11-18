@@ -41,7 +41,9 @@ class SearchViewController: UIViewController {
         
         configureSubviews()
         layoutSubviews()
+        
         bindViewModel()
+        bindPlayer()
         
 //        vm.send(action: .lookup)
     }
@@ -83,5 +85,9 @@ class SearchViewController: UIViewController {
         vm.state.$fetching
             .drive(indicatorView.rx.isAnimating)
             .disposed(by: dbag)
+    }
+        
+    func bindPlayer() {
+        playerBar.bind(player: vm.player)
     }
 }

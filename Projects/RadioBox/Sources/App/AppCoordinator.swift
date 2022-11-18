@@ -10,7 +10,7 @@ import UIKit
 
 final class AppCoordinator: Coordinator {
     enum Location {
-        case lookup
+        case lookup(Player)
     }
     
     let window: UIWindow = UIWindow(frame: UIScreen.main.bounds)
@@ -18,8 +18,8 @@ final class AppCoordinator: Coordinator {
     
     func coordinate(_ location: Location) {
         switch location {
-        case .lookup:
-            LookupCoordinator.start(window: window)
+        case .lookup(let player):
+            LookupCoordinator.start(window: window, player: player)
         }
     }
     

@@ -19,10 +19,10 @@ final class HomeCoordinator: Coordinator {
         self.vc = vc
     }
     
-    static func start(service: RadioService) -> HomeViewController {
+    static func start(service: RadioService, player: Player) -> HomeViewController {
         let vc = HomeViewController()
         let coordinator = Self.init(vc: vc)
-        let vm = HomeViewModel(service: service, coordinator: coordinator)
+        let vm = HomeViewModel(service: service, coordinator: coordinator, player: player)
         
         vc.vm = vm
         
