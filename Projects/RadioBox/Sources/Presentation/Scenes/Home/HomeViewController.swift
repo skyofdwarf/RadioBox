@@ -60,7 +60,7 @@ class HomeViewController: UIViewController {
     }
     
     func layoutSubviews() {
-        view.subviews(
+        view.subviews (
             cv,
             indicatorView,
             playerBar

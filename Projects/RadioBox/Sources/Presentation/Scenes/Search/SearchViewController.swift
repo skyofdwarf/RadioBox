@@ -17,6 +17,8 @@ class SearchViewController: UIViewController {
     let radioImageView = UIImageView(image: UIImage(systemName: "antenna.radiowaves.left.and.right"))
     let indicatorView = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.large)
     
+    let playerBar = PlayerBar()
+    
     var vm: SearchViewModel!
     var dbag = DisposeBag()
     
@@ -57,6 +59,7 @@ class SearchViewController: UIViewController {
             label
             radioImageView
             indicatorView
+            playerBar
         }
         
         view.layout {
@@ -66,6 +69,14 @@ class SearchViewController: UIViewController {
         }
         
         radioImageView.centerInContainer()
+        
+        playerBar.fillHorizontally()
+        playerBar.Top == view.safeAreaLayoutGuide.Bottom
+        
+        additionalSafeAreaInsets = UIEdgeInsets(top: 0,
+                                                left: 0,
+                                                bottom: playerBar.intrinsicContentSize.height,
+                                                right: 0)
     }
     
     func bindViewModel() {
