@@ -15,9 +15,10 @@ import RxCocoa
 class LookupViewController: UIViewController {
     let radioImageView = UIImageView(image: UIImage(systemName: "radio"))
     let indicatorView = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.large)
+    let retryButton = UIButton(type: .system)
     
     var vm: LookupViewModel!
-
+    
     var dbag = DisposeBag()
     
     deinit {
@@ -40,17 +41,26 @@ class LookupViewController: UIViewController {
         radioImageView.contentMode = .scaleAspectFit
         indicatorView.color = .red
         indicatorView.hidesWhenStopped = true
+        
+        let retryLookupAction = UIAction { [weak self] _ in
+            self?.vm.send(action: .lookup)
+        }
+        
+        retryButton.addAction(retryLookupAction, for: .touchUpInside)
+        retryButton.setTitle("Retry to connect server", for: .normal)
     }
     
     func layoutSubviews() {
         view.subviews {
             radioImageView
             indicatorView
+            retryButton
         }
         
         view.layout {
             radioImageView.size(200)
             |-indicatorView-|
+            |-retryButton-|
         }
         
         radioImageView.centerInContainer()
@@ -59,6 +69,11 @@ class LookupViewController: UIViewController {
     func bindViewModel() {
         vm.state.$fetching
             .drive(indicatorView.rx.isAnimating)
+            .disposed(by: dbag)
+                
+        vm.state.$status
+            .map { $0 != .failed }
+            .drive(retryButton.rx.isHidden)
             .disposed(by: dbag)
     }
 }

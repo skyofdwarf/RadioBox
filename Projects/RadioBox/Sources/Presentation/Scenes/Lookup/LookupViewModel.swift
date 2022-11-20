@@ -17,13 +17,13 @@ enum LookupAction {
 
 enum LookupMutation {
     case fetching(Bool)
+    case status(LookupStatus)
     case hostnames([String])
 }
 
 enum LookupEvent {
     case coordinate(LookupCoordinator.Location)
     case lookupFailed
-    case noHostname
 }
 
 extension LookupEvent: Coordinating {
@@ -38,8 +38,16 @@ extension LookupEvent: Coordinating {
 struct LookupState {
     @Drived var fetching: Bool = false
     @Drived var hostnames: [String] = []
+    @Drived var status: LookupStatus = .idle
 }
-    
+
+enum LookupStatus {
+    case idle
+    case lookingUp
+    case lookedUp
+    case failed
+}
+
 final class LookupViewModel: CoordinatingViewModel<LookupAction, LookupMutation, LookupEvent, LookupState> {
     enum Constant {
         static let urlToLookup = "all.api.radio-browser.info"
@@ -56,19 +64,24 @@ final class LookupViewModel: CoordinatingViewModel<LookupAction, LookupMutation,
                 do {
                     let hostnames = try DNSLookup.reverseLookup(hostname: Constant.urlToLookup)
                     if hostnames.isEmpty {
+                        observer.onNext(.mutation(.status(.failed)))
                         observer.onNext(.event(.lookupFailed))
                     } else {
                         observer.onNext(.mutation(.hostnames(hostnames)))
+                        observer.onNext(.mutation(.status(.lookedUp)))
                         let hostname = hostnames.randomElement()!
                         observer.onNext(.event(.coordinate(.home(hostname))))
                     }
                 } catch {
+                    observer.onNext(.mutation(.status(.failed)))
                     observer.onNext(.event(.lookupFailed))
                 }
                 observer.onCompleted()
                 return Disposables.create {}
             }
-            .startWith(.mutation(.fetching(true)))
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .userInitiated))
+            .observe(on: MainScheduler.instance)
+            .startWith(.mutation(.fetching(true)), .mutation(.status(.lookingUp)))
             .concat(Observable<Reaction>.just(.mutation(.fetching(false))))
         }
     }
@@ -79,6 +92,8 @@ final class LookupViewModel: CoordinatingViewModel<LookupAction, LookupMutation,
             state.fetching = fetching
         case .hostnames(let hostnames):
             state.hostnames = hostnames
+        case .status(let status):
+            state.status = status
         }
     }
 }
