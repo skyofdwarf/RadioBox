@@ -16,6 +16,8 @@ extension PlayerStatus {
         switch self {
         case .playing: return UIImage(systemName: "stop")
         case .stopped: return UIImage(systemName: "play")
+        case .waitingToPlay: return UIImage(systemName: "waveform.path")
+        case .disabled: return UIImage(systemName: "play")
         }
     }
 }
@@ -33,11 +35,13 @@ class PlayerBar: UIToolbar {
     
     override init(frame: CGRect) {
         playButton = UIButton(type: .system).then {
-            $0.size(Self.barHeight)
+            $0.setImage(PlayerStatus.stopped.image, for: .normal)
         }
         faviconImageView = UIImageView().then {
-            $0.size(Self.barHeight)
-            $0.backgroundColor = .systemYellow
+            $0.contentMode = .scaleAspectFill
+            $0.clipsToBounds = true
+            $0.tintColor = .secondaryLabel
+            $0.backgroundColor = .systemGroupedBackground
         }
         infoLabel = UILabel().then {
             $0.font = UIFont.preferredFont(forTextStyle: .caption2)
@@ -69,8 +73,6 @@ class PlayerBar: UIToolbar {
         let action = UIAction { [weak self] _ in
             self?.player?.toggle()
         }
-        
-        playButton.setImage(PlayerStatus.stopped.image, for: .normal)
         playButton.addAction(action, for: .touchUpInside)
         
         let container = UIView().then {
@@ -92,10 +94,14 @@ class PlayerBar: UIToolbar {
         }
         
         container.fillContainer()
+        playButton.size(Self.barHeight)
+        faviconImageView.size(Self.barHeight)
     }
     
     func updatePlayButton(status: PlayerStatus) {
+        playButton.isEnabled = status != .disabled
         playButton.setImage(status.image, for: .normal)
+        playButton.tintColor = status == .waitingToPlay ? .systemGray : .systemBlue
     }
         
     func bind(player: Player) {
@@ -109,11 +115,15 @@ class PlayerBar: UIToolbar {
         player.station.sink { [weak self] station in
             if let station {
                 self?.infoLabel.text = station.name
-                self?.faviconImageView.kf.setImage(with: URL(string: station.favicon))
+                self?.faviconImageView.kf.setImage(with: URL(string: station.favicon), placeholder: UIImage(systemName: "radio"))
             } else {
                 self?.infoLabel.text = nil
                 self?.faviconImageView.image = UIImage(systemName: "radio")
             }
+        }.store(in: &dbag)
+        
+        player.error.sink {
+            print("error: \($0)")
         }.store(in: &dbag)
     }
 }

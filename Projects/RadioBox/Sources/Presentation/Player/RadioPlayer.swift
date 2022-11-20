@@ -10,66 +10,107 @@ import Foundation
 import AVFoundation
 import Combine
 
+extension PlayerStatus {
+    init?(from timeControlStatus: AVPlayer.TimeControlStatus?) {
+        switch timeControlStatus {
+        case .playing: self = .playing
+        case .paused: self = .stopped
+        case .waitingToPlayAtSpecifiedRate: self =  .waitingToPlay
+        default: return nil
+        }
+    }
+}
+
 class RadioPlayer: NSObject, Player {
-    private let statusSubject = CurrentValueSubject<PlayerStatus, Never>(.stopped)
+    private let statusSubject = CurrentValueSubject<PlayerStatus, Never>(.disabled)
     var status: AnyPublisher<PlayerStatus, Never> { statusSubject.eraseToAnyPublisher() }
     
     private let stationSubject = CurrentValueSubject<RadioStation?, Never>(nil)
     var station: AnyPublisher<RadioStation?, Never> { stationSubject.eraseToAnyPublisher() }
     
-    private var player: AVPlayer?
+    private let errorSubject = PassthroughSubject<Error, Never>()
+    var error: AnyPublisher<Error, Never> { errorSubject.eraseToAnyPublisher() }
     
-    private var timeObserver: Any?
+    
+    private let player = AVPlayer()
+    private var playerItem: AVPlayerItem?
+    
+    deinit {
+        player.removeObserver(self, forKeyPath: "timeControlStatus")
+    }
+    
+    override init() {
+        super.init()
+        
+        player.addObserver(self, forKeyPath: "timeControlStatus", options: [.initial, .new ], context: nil)
+    }
 
     func toggle() {
-        guard let player else { return }
-            
-        if player.timeControlStatus == .paused {
-            player.play()
-        } else {
+        guard player.currentItem != nil else { return }
+        
+        switch player.timeControlStatus {
+        case .playing, .waitingToPlayAtSpecifiedRate:
             player.pause()
+        case .paused:
+            player.play()
+        default:
+            break
         }
     }
     
     func play(station: RadioStation) {
-        if let timeObserver {
-            player?.removeTimeObserver(timeObserver)
-            self.timeObserver = nil
-        }
+        // dispose old item
         
-        player?.pause()
-        player?.cancelPendingPrerolls()
+        playerItem?.removeObserver(self, forKeyPath: "status")
         
-        player?.removeObserver(self, forKeyPath: "timeControlStatus")
+        player.pause()
+        player.cancelPendingPrerolls()
         
-        player = AVPlayer(url: station.url_resolved)
+        // set new item
+        playerItem = AVPlayerItem(url: station.url_resolved)
+        player.replaceCurrentItem(with: playerItem)
         
-        timeObserver = player?.addPeriodicTimeObserver(forInterval: CMTime(seconds: 1, preferredTimescale: 600),
-                                        queue: DispatchQueue.main,
-                                        using: { time in
-            // ?
-        })
+        playerItem?.addObserver(self, forKeyPath: "status", options: [.initial, .new ], context: nil)
         
-        player?.addObserver(self, forKeyPath: "timeControlStatus", options: [.initial, .new ], context: nil)
-        
-        // TODO: error catch
-        
-        player?.play()
+        player.play()
         
         stationSubject.send(station)
     }
     
     func stop() {
-        player?.pause()
+        player.pause()
     }
     
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        if let statusRawValue = change?[.newKey] as? AVPlayer.TimeControlStatus.RawValue {
-            let status = (statusRawValue == AVPlayer.TimeControlStatus.paused.rawValue ?
-                          PlayerStatus.stopped :
-                            PlayerStatus.playing)
-            
-            statusSubject.send(status)
+        switch keyPath {
+        case "timeControlStatus":
+            if let rawValue = change?[.newKey] as? AVPlayer.TimeControlStatus.RawValue {
+                print("timeControlStatus: \(rawValue)")
+                
+                // ignore changes after an error of player item
+                guard playerItem?.error == nil else {
+                    return ;
+                }
+                
+                if let status = PlayerStatus(from: AVPlayer.TimeControlStatus(rawValue: rawValue)) {
+                    statusSubject.send(status)
+                }
+            }
+        case "status":
+            if let rawValue = change?[.newKey] as? AVPlayerItem.Status.RawValue {
+                let failed = rawValue == AVPlayerItem.Status.failed.rawValue
+                print("item.status: \(failed)")
+                
+                if failed {
+                    statusSubject.send(.disabled)
+                    
+                    if let error = playerItem?.error {
+                        errorSubject.send(error)
+                    }
+                }
+            }
+        default:
+            break
         }
     }
 }
