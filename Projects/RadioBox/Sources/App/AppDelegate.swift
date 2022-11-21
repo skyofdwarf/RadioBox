@@ -2,17 +2,6 @@ import UIKit
 import RadioBrowser
 import Then
 
-extension UIApplication {
-    static let coordinator = AppCoordinator()
-    static let model = AppModel(coordinator: coordinator, player: RadioPlayer())
-    
-    var window: UIWindow { Self.coordinator.window }
-    
-    func start() {
-        UIApplication.model.send(action: .start)
-    }
-}
-
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
@@ -26,5 +15,4 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         return true
     }
-
 }
