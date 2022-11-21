@@ -95,7 +95,6 @@ class HomeViewController: UIViewController {
             .bind(onNext: { vc, stations in
                 vc.applyDataSource(stations: stations)
             })
-        
             .disposed(by: dbag)
     }
     
@@ -237,5 +236,14 @@ extension HomeViewController: UICollectionViewDelegate {
         }
         
         vm.player.play(station: station)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        let numberOfItems = dataSource.collectionView(collectionView, numberOfItemsInSection: indexPath.section)
+        let isLastItem = indexPath.row == numberOfItems - 1
+        
+        if isLastItem {
+            vm.send(action: .tryFetchNextPage)
+        }
     }
 }

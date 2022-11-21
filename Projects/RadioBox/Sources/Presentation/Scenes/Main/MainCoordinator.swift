@@ -10,14 +10,11 @@ import UIKit
 import RxCocoa
 final class MainCoordinator {
     static func start(window: UIWindow, serverURL: URL, player: Player) {
-        //let service = RadioService(baseURL: serverURL)
-        
-        let mockService = RadioService.mock.immediatelyStub(baseURL: serverURL)
-        let delayedMockService = RadioService.mock.delayedStub(baseURL: serverURL, seconds: 1)
+        let service = RadioService(baseURL: serverURL)
         
         let vc = MainViewController().then {
-            $0.viewControllers = [ HomeCoordinator.start(service: mockService, player: player),
-                                   SearchCoordinator.start(service: delayedMockService, player: player),
+            $0.viewControllers = [ HomeCoordinator.start(service: service, player: player),
+                                   SearchCoordinator.start(service: service, player: player),
                                    SettingsCoordinator.start(),
             ].map { $0.navigationRooted }
         }
