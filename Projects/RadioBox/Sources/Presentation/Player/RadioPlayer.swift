@@ -55,20 +55,30 @@ class RadioPlayer: NSObject, Player {
         player.addObserver(self, forKeyPath: "timeControlStatus", options: [.initial, .new ], context: nil)
     }
     
-    func toggle() {
-        guard player.currentItem != nil else { return }
+    static func configureAudioSession() {
+        print("categories: \(AVAudioSession.sharedInstance().availableCategories)")
+        print("modes: \(AVAudioSession.sharedInstance().availableModes)")
         
-        switch player.timeControlStatus {
-        case .playing, .waitingToPlayAtSpecifiedRate:
-            player.pause()
-        case .paused:
-            player.play()
-        default:
-            break
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playback,
+                                                            mode: .default,
+                                                            options: [.interruptSpokenAudioAndMixWithOthers, .allowAirPlay])
+        } catch {
+            print("AudioSettion configuring error: \(error)")
         }
     }
     
-    func disposePlayerItem() {
+    private func activeAudio(_ active: Bool) {
+        do {
+            try AVAudioSession.sharedInstance().setActive(active,
+                                                          options: active ? []: [.notifyOthersOnDeactivation])
+        } catch {
+            print("AudioSession activation error: \(error)")
+            errorSubject.send(error)
+        }
+    }
+    
+    private func disposePlayerItem() {
         if let metadataOutput {
             metadataOutput.setDelegate(nil, queue: nil)
             playerItem?.remove(metadataOutput)
@@ -91,6 +101,8 @@ class RadioPlayer: NSObject, Player {
             return
         }
         
+        activeAudio(true)
+        
         playerItem = AVPlayerItem(url: url)
         
         playerItem?.addObserver(self, forKeyPath: "status", options: [.initial, .new ], context: nil)
@@ -109,8 +121,23 @@ class RadioPlayer: NSObject, Player {
     
     func stop() {
         player.pause()
+        
+        activeAudio(false)
     }
     
+    func toggle() {
+        guard player.currentItem != nil else { return }
+        
+        switch player.timeControlStatus {
+        case .playing, .waitingToPlayAtSpecifiedRate:
+            player.pause()
+        case .paused:
+            player.play()
+        default:
+            break
+        }
+    }
+        
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         switch keyPath {
         case "timeControlStatus":

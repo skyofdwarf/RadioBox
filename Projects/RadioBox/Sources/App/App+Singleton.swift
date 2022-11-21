@@ -18,5 +18,7 @@ extension UIApplication {
     
     func start() {
         UIApplication.model.send(action: .start)
+        
+        RadioPlayer.configureAudioSession()
     }
 }

@@ -37,7 +37,8 @@ extension Project {
             "CFBundleVersion": "1",
             "UIMainStoryboardFile": "",
             "UILaunchStoryboardName": "LaunchScreen",
-            "NSAppTransportSecurity": .dictionary(["NSAllowsArbitraryLoads": .boolean(true)])
+            "NSAppTransportSecurity": .dictionary(["NSAllowsArbitraryLoads": .boolean(true)]),
+            "UIBackgroundModes": .array(["audio"])
             ]
 
         let mainTarget = Target(
