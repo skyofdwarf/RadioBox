@@ -5,7 +5,7 @@ import Then
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-    var window: UIWindow? = UIApplication.coordinator.window
+    lazy var window: UIWindow? = UIApplication.coordinator.window
 
     func application(
         _ application: UIApplication,
