@@ -11,7 +11,7 @@ import RadioBrowser
 import Moya
 
 final class RadioService: RadioBrowser {
-    init(baseURL: URL, userAgent: String = "RadioBox/0.1.0") {
+    init(baseURL: URL, userAgent: String = "RadioBox/0.1.0", stubClosure: @escaping MoyaProvider<MultiTarget>.StubClosure = MoyaProvider.neverStub) {
 #if DEBUG
         let plugins: [PluginType] = [
             NetworkLoggerPlugin(configuration: .init(logOptions: .verbose)),
@@ -36,9 +36,19 @@ final class RadioService: RadioBrowser {
         }
         
         let provider = MoyaProvider<MultiTarget>(endpointClosure: endpointClosure,
-                                                 stubClosure: MoyaProvider.immediatelyStub,
+                                                 stubClosure: stubClosure,
                                                  plugins: plugins)
         
         super.init(provider: provider)
+    }
+    
+    struct mock {
+        static func delayedStub(baseURL: URL, seconds: TimeInterval = 1) -> RadioService {
+            RadioService(baseURL: baseURL, stubClosure: MoyaProvider<MultiTarget>.delayedStub(seconds))
+        }
+        
+        static func immediatelyStub(baseURL: URL, seconds: TimeInterval = 1) -> RadioService {
+            RadioService(baseURL: baseURL, stubClosure: MoyaProvider<MultiTarget>.immediatelyStub)
+        }
     }
 }
