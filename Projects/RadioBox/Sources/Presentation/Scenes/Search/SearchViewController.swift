@@ -14,11 +14,13 @@ import RxCocoa
 
 class SearchViewController: UIViewController {
     let label = UILabel()
-    let radioImageView = UIImageView(image: UIImage(systemName: "antenna.radiowaves.left.and.right"))
     let indicatorView = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.large)
     
     var cv: UICollectionView!
     private var dataSource: UICollectionViewDiffableDataSource<Section, RadioStation>!
+    
+    let searchBar = UISearchBar()
+    let queryRelay = PublishRelay<String?>()
     
     let playerBar = PlayerBar()
     
@@ -51,9 +53,8 @@ class SearchViewController: UIViewController {
     }
     
     func configureSubviews() {
-        label.text = "Search"
+        label.text = "Search stations by name"
         label.textAlignment = .center
-        radioImageView.contentMode = .scaleAspectFit
         indicatorView.color = .red
         indicatorView.hidesWhenStopped = true
         
@@ -62,6 +63,11 @@ class SearchViewController: UIViewController {
         
         dataSource = createDataSource()
         
+        searchBar.placeholder = "Search stations by name"
+        searchBar.delegate = self
+        
+        navigationItem.titleView = searchBar
+        
         layoutSubviews()
     }
     
@@ -69,19 +75,17 @@ class SearchViewController: UIViewController {
         view.subviews {
             cv!
             label
-            radioImageView
             indicatorView
             playerBar
         }
         
         view.layout {
-            |-label-|
-            radioImageView.size(200)
             |-indicatorView-|
+            |-label-|
         }
         
         cv.fillContainer()
-        radioImageView.centerInContainer()
+        indicatorView.centerInContainer()
         
         playerBar.fillHorizontally()
         playerBar.Top == view.safeAreaLayoutGuide.Bottom
@@ -93,8 +97,21 @@ class SearchViewController: UIViewController {
     }
     
     func bindViewModel() {
+        // input
+        queryRelay
+            .compactMap { $0 }
+            .map { SearchAction.search($0) }
+            .bind(to: vm.action)
+            .disposed(by: dbag)
+        
+        // output
         vm.state.$fetching
             .drive(indicatorView.rx.isAnimating)
+            .disposed(by: dbag)
+        
+        vm.state.$stations
+            .map { !$0.isEmpty }
+            .drive(label.rx.isHidden)
             .disposed(by: dbag)
     }
         
@@ -255,5 +272,22 @@ extension SearchViewController: UICollectionViewDelegate {
         if isLastItem {
             vm.send(action: .trySearchNextPage)
         }
+    }
+}
+
+// MARK: UISearchBarDelegate
+
+extension SearchViewController: UISearchBarDelegate {
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        print("text: \(searchBar.text)")
+        
+        searchBar.resignFirstResponder()
+        
+        let query = searchBar.text
+        self.queryRelay.accept(query)
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
     }
 }
