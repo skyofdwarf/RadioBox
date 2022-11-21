@@ -43,11 +43,11 @@ final class RadioService: RadioBrowser {
     }
     
     struct mock {
-        static func delayedStub(baseURL: URL, seconds: TimeInterval = 1) -> RadioService {
+        static func delayedStub(baseURL: URL, seconds: TimeInterval) -> RadioService {
             RadioService(baseURL: baseURL, stubClosure: MoyaProvider<MultiTarget>.delayedStub(seconds))
         }
         
-        static func immediatelyStub(baseURL: URL, seconds: TimeInterval = 1) -> RadioService {
+        static func immediatelyStub(baseURL: URL) -> RadioService {
             RadioService(baseURL: baseURL, stubClosure: MoyaProvider<MultiTarget>.immediatelyStub)
         }
     }
