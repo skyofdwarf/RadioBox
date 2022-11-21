@@ -30,6 +30,8 @@ protocol Player: AnyObject {
     var status: AnyPublisher<PlayerStatus, Never> { get }
     var station: AnyPublisher<RadioStation?, Never> { get }
     var error: AnyPublisher<Error, Never> { get }
+    var streamTitle: AnyPublisher<String, Never> { get }
+    var streamUrl: AnyPublisher<String, Never> { get }
     
     func play(station: RadioStation)
     func stop()

@@ -31,9 +31,15 @@ class RadioPlayer: NSObject, Player {
     private let errorSubject = PassthroughSubject<Error, Never>()
     var error: AnyPublisher<Error, Never> { errorSubject.eraseToAnyPublisher() }
     
+    private let streamTitleSubject = PassthroughSubject<String, Never>()
+    var streamTitle: AnyPublisher<String, Never> { streamTitleSubject.eraseToAnyPublisher() }
+    
+    private let streamUrlSubject = PassthroughSubject<String, Never>()
+    var streamUrl: AnyPublisher<String, Never> { streamUrlSubject.eraseToAnyPublisher() }
     
     private let player = AVPlayer()
     private var playerItem: AVPlayerItem?
+    private var metadataOutput: AVPlayerItemMetadataOutput?
     
     deinit {
         player.removeObserver(self, forKeyPath: "timeControlStatus")
@@ -44,7 +50,7 @@ class RadioPlayer: NSObject, Player {
         
         player.addObserver(self, forKeyPath: "timeControlStatus", options: [.initial, .new ], context: nil)
     }
-
+    
     func toggle() {
         guard player.currentItem != nil else { return }
         
@@ -61,6 +67,10 @@ class RadioPlayer: NSObject, Player {
     func play(station: RadioStation) {
         // dispose old item
         
+        if let metadataOutput {
+            metadataOutput.setDelegate(nil, queue: nil)
+            playerItem?.remove(metadataOutput)
+        }
         playerItem?.removeObserver(self, forKeyPath: "status")
         
         player.pause()
@@ -68,10 +78,15 @@ class RadioPlayer: NSObject, Player {
         
         // set new item
         playerItem = AVPlayerItem(url: station.url_resolved)
-        player.replaceCurrentItem(with: playerItem)
         
         playerItem?.addObserver(self, forKeyPath: "status", options: [.initial, .new ], context: nil)
         
+        metadataOutput = AVPlayerItemMetadataOutput(identifiers: nil).then {
+            $0.setDelegate(self, queue: .main)
+            playerItem?.add($0)
+        }
+        
+        player.replaceCurrentItem(with: playerItem)
         player.play()
         
         stationSubject.send(station)
@@ -85,10 +100,13 @@ class RadioPlayer: NSObject, Player {
         switch keyPath {
         case "timeControlStatus":
             if let rawValue = change?[.newKey] as? AVPlayer.TimeControlStatus.RawValue {
-                print("timeControlStatus: \(rawValue)")
-                
                 // ignore changes after an error of player item
-                guard playerItem?.error == nil else {
+                
+                guard let playerItem else {
+                    return
+                }
+                
+                guard playerItem.error == nil else {
                     return ;
                 }
                 
@@ -97,10 +115,15 @@ class RadioPlayer: NSObject, Player {
                 }
             }
         case "status":
+            guard let currentPlayerItem = playerItem,
+                  let observedPlayerItem = object as? AVPlayerItem,
+                    currentPlayerItem == observedPlayerItem
+            else {
+                return
+            }
+            
             if let rawValue = change?[.newKey] as? AVPlayerItem.Status.RawValue {
                 let failed = rawValue == AVPlayerItem.Status.failed.rawValue
-                print("item.status: \(failed)")
-                
                 if failed {
                     statusSubject.send(.disabled)
                     
@@ -110,6 +133,33 @@ class RadioPlayer: NSObject, Player {
                 }
             }
         default:
+            break
+        }
+    }
+}
+
+extension RadioPlayer: AVPlayerItemMetadataOutputPushDelegate {
+    func metadataOutput(_ output: AVPlayerItemMetadataOutput, didOutputTimedMetadataGroups groups: [AVTimedMetadataGroup], from track: AVPlayerItemTrack?) {
+        guard let group = groups.first,
+              let item = group.items.first
+        else {
+            return
+        }
+        
+        switch item.identifier {
+        case AVMetadataIdentifier.icyMetadataStreamTitle:
+            if let title = item.stringValue {
+                streamTitleSubject.send(title)
+            }
+        case AVMetadataIdentifier.icyMetadataStreamURL:
+            if let url = item.stringValue {
+                streamUrlSubject.send(url)
+            }
+        default:
+#if DEBUG
+            print("metadata key: \(String(describing: item.key)), keySpace: \(String(describing: item.keySpace))")
+            print("metadata id: \(String(describing: item.identifier)), value: \(String(describing: item.value))")
+#endif
             break
         }
     }
