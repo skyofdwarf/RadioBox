@@ -147,7 +147,9 @@ class PlayerBar: UIToolbar {
     }
     
     func updateFavicon(with url: URL?) {
-        faviconImageView.kf.setImage(with: url, placeholder: UIImage(systemName: "radio"))
+        faviconImageView.kf.setImage(with: url,
+                                     placeholder: UIImage(systemName: "radio"),
+                                     options: [ .transition(.fade(0.3)) ])
     }
         
     func bind(player: Player) {

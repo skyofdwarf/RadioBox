@@ -70,7 +70,9 @@ class StationCell: UICollectionViewCell {
         let url = URL(string: station.favicon)
         
         task?.cancel()
-        task = imageView.kf.setImage(with: url, placeholder: UIImage(systemName: "radio"))
+        task = imageView.kf.setImage(with: url,
+                                     placeholder: UIImage(systemName: "radio"),
+                                     options: [ .transition(.fade(0.3)), .forceTransition ])
         
         label.text = station.name
     }
