@@ -21,7 +21,7 @@ enum SearchMutation {
     case stations([RadioStation], reset: Bool)
     
     case keyword(String?)
-    case pageOffset(Int)
+    case page(Int)
     case hasNextPage(Bool)
 }
 
@@ -43,7 +43,7 @@ struct SearchState {
     @Drived var stations: [RadioStation] = []
     
     var keyword: String?
-    var pageOffset = 0
+    var page = 0
     var hasNextPage = true
 }
 
@@ -61,9 +61,9 @@ final class SearchViewModel: CoordinatingViewModel<SearchAction, SearchMutation,
     override func react(action: Action, state: State) -> Observable<Reaction> {
         switch action {
         case .search(let keyword):
-            return searchKeyword(keyword, offset: 0)
+            return searchKeyword(keyword, page: 0)
         case .trySearchNextPage:
-            return searchKeyword(state.keyword, offset: state.pageOffset + Constant.PageLimit)
+            return searchKeyword(state.keyword, page: state.page + 1)
         }
     }
     
@@ -77,8 +77,8 @@ final class SearchViewModel: CoordinatingViewModel<SearchAction, SearchMutation,
             } else {
                 state.stations += stations
             }
-        case .pageOffset(let offset):
-            state.pageOffset = offset
+        case .page(let page):
+            state.page = page
         case .hasNextPage(let hasNextPage):
             state.hasNextPage = hasNextPage
         case .keyword(let keyword):
@@ -92,18 +92,21 @@ extension SearchViewModel {
         static let PageLimit = 30
     }
     
-    func searchKeyword(_ keyword: String?, offset: Int) -> Observable<Reaction> {
+    func searchKeyword(_ keyword: String?, page: Int) -> Observable<Reaction> {
         guard let keyword, !state.fetching, state.hasNextPage else {
             return .empty()
         }
+        let limit = Constant.PageLimit
+        let offset = page * limit
+        
         return Observable<Reaction>.create { [weak self] observer in
             let options: [SearchStationOptions] = [.name(keyword),
                                                    .offset(offset),
-                                                   .limit(Constant.PageLimit) ]
+                                                   .limit(limit) ]
             self?.service.request(RadioBrowserTarget.searchStation(options), success: { (stationDTOs: [RadioBrowserStation]) in
                 let hasNextPage = stationDTOs.count >= Constant.PageLimit
                 let stations = stationDTOs.map(RadioStation.init(_:))
-                observer.onNext(.mutation(.pageOffset(offset)))
+                observer.onNext(.mutation(.page(page)))
                 observer.onNext(.mutation(.hasNextPage(hasNextPage)))
                 observer.onNext(.mutation(.stations(stations, reset: offset == 0)))
                 observer.onCompleted()
