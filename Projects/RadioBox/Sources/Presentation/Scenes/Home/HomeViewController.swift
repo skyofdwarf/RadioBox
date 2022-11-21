@@ -203,13 +203,14 @@ extension HomeViewController {
         let itemCountInLIne = 3.0
         let contentWidth = UIScreen.main.bounds.width - (sectionInset * 2)
         let itemWidth = ceil((contentWidth - (itemSpacing * (itemCountInLIne - 1))) / itemCountInLIne)
-        
+        let itemHeight = itemWidth + 40
+                
         let itemSize = NSCollectionLayoutSize(widthDimension: .absolute(itemWidth),
-                                              heightDimension: .absolute(itemWidth + 30))
+                                              heightDimension: .absolute(itemHeight))
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         
         let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
-                                               heightDimension: .absolute(itemWidth + 30))
+                                               heightDimension: .absolute(itemHeight))
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
         
         group.interItemSpacing = .flexible(itemSpacing)

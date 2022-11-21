@@ -38,6 +38,8 @@ class StationCell: UICollectionViewCell {
         label.textColor = UIColor.label
         label.font = UIFont.preferredFont(forTextStyle: .caption1)
         label.adjustsFontForContentSizeCategory = true
+        label.minimumScaleFactor = 0.6
+        label.adjustsFontSizeToFitWidth = true
         
         imageView.clipsToBounds = true
         imageView.contentMode = .scaleAspectFill
@@ -53,13 +55,12 @@ class StationCell: UICollectionViewCell {
             label
         )
         
-        imageView.translatesAutoresizingMaskIntoConstraints = false
         layout {
             0
             |imageViewContainer|
             0
             |-4-label-4-|
-            0
+            >=0
         }
         
         imageViewContainer.heightEqualsWidth()

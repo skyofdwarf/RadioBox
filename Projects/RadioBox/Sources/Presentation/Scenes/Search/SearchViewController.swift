@@ -201,42 +201,20 @@ extension SearchViewController {
         }
     }
     
-    
-    static func horizontalStationList() -> NSCollectionLayoutSection {
-        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
-                                              heightDimension: .fractionalHeight(1))
-        let item = NSCollectionLayoutItem(layoutSize: itemSize)
-        
-        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.4),
-                                               heightDimension: .fractionalWidth(0.4*1.5))
-        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
-        
-        return NSCollectionLayoutSection(group: group).then {
-            $0.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 10, bottom: 0, trailing: 10)
-            $0.interGroupSpacing = 10
-            $0.orthogonalScrollingBehavior = .continuous
-            
-            let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                    heightDimension: .absolute(40))
-            let sectionHeader = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize,
-                                                                            elementKind: UICollectionView.elementKindSectionHeader, alignment: .top)
-            $0.boundarySupplementaryItems = [sectionHeader]
-        }
-    }
-    
     static func verticalStationList() -> NSCollectionLayoutSection {
         let sectionInset = 10.0
         let itemSpacing = 5.0
         let itemCountInLIne = 3.0
         let contentWidth = UIScreen.main.bounds.width - (sectionInset * 2)
         let itemWidth = ceil((contentWidth - (itemSpacing * (itemCountInLIne - 1))) / itemCountInLIne)
+        let itemHeight = itemWidth + 40
         
         let itemSize = NSCollectionLayoutSize(widthDimension: .absolute(itemWidth),
-                                              heightDimension: .absolute(itemWidth + 30))
+                                              heightDimension: .absolute(itemHeight))
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         
         let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
-                                               heightDimension: .absolute(itemWidth + 30))
+                                               heightDimension: .absolute(itemHeight))
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
         
         group.interItemSpacing = .flexible(itemSpacing)
@@ -244,12 +222,6 @@ extension SearchViewController {
         return NSCollectionLayoutSection(group: group).then {
             $0.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: sectionInset, bottom: 0, trailing: sectionInset)
             $0.interGroupSpacing = 6
-            
-            let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                    heightDimension: .absolute(40))
-            let sectionHeader = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize,
-                                                                            elementKind: UICollectionView.elementKindSectionHeader, alignment: .top)
-            $0.boundarySupplementaryItems = [sectionHeader]
         }
     }
 }
@@ -279,8 +251,6 @@ extension SearchViewController: UICollectionViewDelegate {
 
 extension SearchViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        print("text: \(searchBar.text)")
-        
         searchBar.resignFirstResponder()
         
         let query = searchBar.text
