@@ -22,6 +22,10 @@ extension PlayerStatus {
 }
 
 class RadioPlayer: NSObject, Player {
+    enum PlayerError: Swift.Error {
+        case invalidURL(String)
+    }
+    
     private let statusSubject = CurrentValueSubject<PlayerStatus, Never>(.disabled)
     var status: AnyPublisher<PlayerStatus, Never> { statusSubject.eraseToAnyPublisher() }
     
@@ -64,20 +68,30 @@ class RadioPlayer: NSObject, Player {
         }
     }
     
-    func play(station: RadioStation) {
-        // dispose old item
-        
+    func disposePlayerItem() {
         if let metadataOutput {
             metadataOutput.setDelegate(nil, queue: nil)
             playerItem?.remove(metadataOutput)
         }
         playerItem?.removeObserver(self, forKeyPath: "status")
+        playerItem = nil
         
         player.pause()
         player.cancelPendingPrerolls()
+    }
+    
+    func play(station: RadioStation) {
+        // dispose old item
+        disposePlayerItem()
         
         // set new item
-        playerItem = AVPlayerItem(url: station.url_resolved)
+        guard let url = URL(string: station.url_resolved) else {
+            stationSubject.send(station)
+            errorSubject.send(PlayerError.invalidURL(station.url_resolved))
+            return
+        }
+        
+        playerItem = AVPlayerItem(url: url)
         
         playerItem?.addObserver(self, forKeyPath: "status", options: [.initial, .new ], context: nil)
         
@@ -89,6 +103,7 @@ class RadioPlayer: NSObject, Player {
         player.replaceCurrentItem(with: playerItem)
         player.play()
         
+        // publish new station
         stationSubject.send(station)
     }
     

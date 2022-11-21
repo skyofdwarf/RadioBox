@@ -12,9 +12,9 @@ public struct RadioBrowserStation: Decodable {
     public let changeuuid: String
     public let stationuuid: String
     public let name: String
-    public let url: URL
-    public let url_resolved: URL
-    public let homepage: URL
+    public let url: String
+    public let url_resolved: String
+    public let homepage: String
     public let favicon: String
     public let tags: String
     public let country: String

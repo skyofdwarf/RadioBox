@@ -12,9 +12,9 @@ import RadioBrowser
 struct RadioStation {
     let stationuuid: String
     let name: String
-    let url: URL
-    let url_resolved: URL
-    let homepage: URL
+    let url: String
+    let url_resolved: String
+    let homepage: String
     let favicon: String
     let tags: String
     let country: String

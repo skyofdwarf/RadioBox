@@ -38,6 +38,17 @@ class CoordinatingViewModel<Action, Mutation, Event, State>: ViewModel<Action, M
     where C.Location == Event.Location {
         self.coordinator = coordinator
         
+#if DEBUG
+        var errorMiddlewares = errorMiddlewares
+        
+        let errorLogger = Self.middleware.error { store, next, error in
+            print("ERROR: \(error)")
+            return next(error)
+        }
+        
+        errorMiddlewares += [ errorLogger ]
+#endif
+        
         super.init(state: initialState,
                    actionMiddlewares: actionMiddlewares,
                    mutationMiddlewares: mutationMiddlewares,
