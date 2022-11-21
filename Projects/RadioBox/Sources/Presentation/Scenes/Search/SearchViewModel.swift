@@ -12,10 +12,17 @@ import RadioBrowser
 import RxSwift
 
 enum SearchAction {
+    case search(String)
+    case trySearchNextPage
 }
 
 enum SearchMutation {
     case fetching(Bool)
+    case stations([RadioStation], reset: Bool)
+    
+    case keyword(String?)
+    case pageOffset(Int)
+    case hasNextPage(Bool)
 }
 
 enum SearchEvent {
@@ -33,11 +40,19 @@ extension SearchEvent: Coordinating {
 
 struct SearchState {
     @Drived var fetching: Bool = false
+    @Drived var stations: [RadioStation] = []
+    
+    var keyword: String?
+    var pageOffset = 0
+    var hasNextPage = true
 }
 
 final class SearchViewModel: CoordinatingViewModel<SearchAction, SearchMutation, SearchEvent, SearchState> {
+    let service: RadioService
     let player: Player
-    init<C: Coordinator>(coordinator: C, player: Player) where C.Location == Event.Location {
+    
+    init<C: Coordinator>(service: RadioService, coordinator: C, player: Player) where C.Location == Event.Location {
+        self.service = service
         self.player = player
         
         super.init(coordinator: coordinator, state: State())
@@ -45,6 +60,10 @@ final class SearchViewModel: CoordinatingViewModel<SearchAction, SearchMutation,
     
     override func react(action: Action, state: State) -> Observable<Reaction> {
         switch action {
+        case .search(let keyword):
+            return searchKeyword(keyword, offset: 0)
+        case .trySearchNextPage:
+            return searchKeyword(state.keyword, offset: state.pageOffset + Constant.PageLimit)
         }
     }
     
@@ -52,6 +71,49 @@ final class SearchViewModel: CoordinatingViewModel<SearchAction, SearchMutation,
         switch mutation {
         case .fetching(let fetching):
             state.fetching = fetching
+        case .stations(let stations, let reset):
+            if reset {
+                state.stations = stations
+            } else {
+                state.stations += stations
+            }
+        case .pageOffset(let offset):
+            state.pageOffset = offset
+        case .hasNextPage(let hasNextPage):
+            state.hasNextPage = hasNextPage
+        case .keyword(let keyword):
+            state.keyword = keyword
         }
+    }
+}
+
+extension SearchViewModel {
+    enum Constant {
+        static let PageLimit = 30
+    }
+    
+    func searchKeyword(_ keyword: String?, offset: Int) -> Observable<Reaction> {
+        guard let keyword, !state.fetching, state.hasNextPage else {
+            return .empty()
+        }
+        return Observable<Reaction>.create { [weak self] observer in
+            let options: [SearchStationOptions] = [.name(keyword),
+                                                   .offset(offset),
+                                                   .limit(Constant.PageLimit) ]
+            self?.service.request(RadioBrowserTarget.searchStation(options), success: { (stationDTOs: [RadioBrowserStation]) in
+                let hasNextPage = stationDTOs.count >= Constant.PageLimit
+                let stations = stationDTOs.map(RadioStation.init(_:))
+                observer.onNext(.mutation(.pageOffset(offset)))
+                observer.onNext(.mutation(.hasNextPage(hasNextPage)))
+                observer.onNext(.mutation(.stations(stations, reset: offset == 0)))
+                observer.onCompleted()
+            }, failure: {
+                observer.onNext(.error($0))
+                observer.onCompleted()
+            })
+            return Disposables.create()
+        }
+        .startWith(.mutation(.fetching(true)), .mutation(.keyword(keyword)))
+        .concat(Observable<Reaction>.just(.mutation(.fetching(false))))
     }
 }

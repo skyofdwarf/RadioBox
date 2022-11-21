@@ -22,7 +22,7 @@ final class SearchCoordinator: Coordinator {
     static func start(service: RadioService, player: Player) -> SearchViewController {
         let vc = SearchViewController()
         let coordinator = Self.init(vc: vc)
-        let vm = SearchViewModel(coordinator: coordinator, player: player)
+        let vm = SearchViewModel(service: service, coordinator: coordinator, player: player)
         
         vc.vm = vm
         
