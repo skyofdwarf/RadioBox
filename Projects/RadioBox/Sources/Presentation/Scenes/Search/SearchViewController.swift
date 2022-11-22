@@ -60,6 +60,7 @@ class SearchViewController: UIViewController {
         
         cv = UICollectionView(frame: view.bounds, collectionViewLayout: Self.createCollectionViewLayout())
         cv.delegate = self
+        cv.backgroundColor = .systemBackground
         
         dataSource = createDataSource()
         
