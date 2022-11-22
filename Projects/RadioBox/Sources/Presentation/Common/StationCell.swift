@@ -73,7 +73,7 @@ class StationCell: UICollectionViewCell {
         task?.cancel()
         task = imageView.kf.setImage(with: url,
                                      placeholder: UIImage(systemName: "radio"),
-                                     options: [ .transition(.fade(0.3)), .forceTransition ])
+                                     options: [ .transition(.fade(0.3)) ])
         
         label.text = station.name
     }
