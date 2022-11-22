@@ -10,6 +10,7 @@ import UIKit
 import Stevia
 import Kingfisher
 import Combine
+import MediaPlayer
 
 extension PlayerStatus {
     var image: UIImage? {
@@ -118,40 +119,34 @@ class PlayerBar: UIToolbar {
     func updateInfo(with station: RadioStation?) {
         if let station {
             titleLabel.text = station.name
-            updateFavicon(with: URL(string: station.favicon))
+            updateFavicon(url: URL(string: station.favicon))
         } else {
             titleLabel.text = "Select a station to listen!"
-            updateFavicon(with: nil)
+            updateFavicon(url: nil)
         }
         
         titleLabel.isHidden = false
         artistLabel.isHidden = true
     }
     
-    func updateTitle(with title: String) {
-        let tokens = title.split(separator: "-")
-        if tokens.count > 1 {
-            titleLabel.text = String(tokens[1]).trimmingCharacters(in: CharacterSet.whitespaces)
-            artistLabel.text = String(tokens[0]).trimmingCharacters(in: CharacterSet.whitespaces)
-            
-            artistLabel.numberOfLines = 1
-        } else {
-            titleLabel.text = title
-            artistLabel.text = nil
-            
-            titleLabel.numberOfLines = 2
-        }
+    func updateTitle(_ title: String, artist: String?) {
+        titleLabel.text = title
+        artistLabel.text = artist
         
-        titleLabel.isHidden = false
-        artistLabel.isHidden = tokens.count == 1
+        titleLabel.numberOfLines = artist == nil ? 2: 1
+        artistLabel.isHidden = artist == nil
     }
     
-    func updateFavicon(with url: URL?) {
+    func updateFavicon(url: URL?) {
+        guard let url else {
+            faviconImageView.image = UIImage(systemName: "radio")
+            return
+        }
         faviconImageView.kf.setImage(with: url,
                                      placeholder: UIImage(systemName: "radio"),
                                      options: [ .transition(.fade(0.3)) ])
     }
-        
+                
     func bind(player: Player) {
         dbag = []
         self.player = player
@@ -164,12 +159,12 @@ class PlayerBar: UIToolbar {
             self?.updateInfo(with: station)
         }.store(in: &dbag)
         
-        player.streamTitle.sink { [weak self] title in
-            self?.updateTitle(with: title)
+        player.streamTitle.sink { [weak self] (title, artist) in
+            self?.updateTitle(title, artist: artist)
         }.store(in: &dbag)
         
-        player.streamUrl.sink { [weak self] urlString in
-            self?.updateFavicon(with: URL(string: urlString))
+        player.streamArtwork.sink { [weak self] url in
+            self?.updateFavicon(url: url)
         }.store(in: &dbag)
         
         

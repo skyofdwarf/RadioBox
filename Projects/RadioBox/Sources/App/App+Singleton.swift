@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import AVFAudio
+import MediaPlayer
 
 extension UIApplication {
     static let player = RadioPlayer()
@@ -19,6 +21,27 @@ extension UIApplication {
     func start() {
         UIApplication.model.send(action: .start)
         
-        RadioPlayer.configureAudioSession()
+        configureAudioSession()
+        configureRemoteCommandCenter()
+    }
+    
+    func configureAudioSession() {
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+        } catch {
+            print("AudioSettion configuring error: \(error)")
+        }
+    }
+        
+    func configureRemoteCommandCenter() {
+        let center = MPRemoteCommandCenter.shared()
+        
+        center.playCommand.addTarget { _ in
+            Self.player.toggle() ? .success : .commandFailed
+        }
+        
+        center.pauseCommand.addTarget { _ in
+            Self.player.toggle() ? .success : .commandFailed
+        }
     }
 }
