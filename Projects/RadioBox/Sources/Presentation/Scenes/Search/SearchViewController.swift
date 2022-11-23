@@ -120,16 +120,22 @@ class SearchViewController: UIViewController {
         playerBar.bind(player: vm.player)
         
         vm.state.$stations
-            .asObservable()
-            .withUnretained(self)
-            .bind(onNext: { vc, stations in
-                vc.applyDataSource(stations: stations)
-            })
+            .drive(with: self) { this, stations in
+                this.applyDataSource(stations: stations)
+            }
+            .disposed(by: dbag)
         
+        vm.event
+            .emit(with: self) { this, _ in
+                this.scrollToTop()
+            }
             .disposed(by: dbag)
     }
+    
+    func scrollToTop() {
+        cv.scrollToItem(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
+    }
 }
-
 
 // MARK: CollectioNView
 

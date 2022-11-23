@@ -27,6 +27,7 @@ enum SearchMutation {
 
 enum SearchEvent {
     case coordinate(SearchCoordinator.Location)
+    case scrollToTop
 }
 
 extension SearchEvent: Coordinating {
@@ -106,9 +107,15 @@ extension SearchViewModel {
             self?.service.request(RadioBrowserTarget.searchStation(options), success: { (stationDTOs: [RadioBrowserStation]) in
                 let hasNextPage = stationDTOs.count >= Constant.PageLimit
                 let stations = stationDTOs.map(RadioStation.init(_:))
+                let scrollToTop = !stations.isEmpty && page == 0
+                
+                observer.onNext(.mutation(.stations(stations, reset: offset == 0)))
                 observer.onNext(.mutation(.page(page)))
                 observer.onNext(.mutation(.hasNextPage(hasNextPage)))
-                observer.onNext(.mutation(.stations(stations, reset: offset == 0)))
+                
+                if scrollToTop {
+                    observer.onNext(.event(.scrollToTop))
+                }
                 observer.onCompleted()
             }, failure: {
                 observer.onNext(.error($0))
