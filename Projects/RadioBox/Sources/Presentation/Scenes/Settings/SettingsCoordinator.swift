@@ -12,20 +12,23 @@ final class SettingsCoordinator: Coordinator {
     enum Location {
     }
     
-    unowned let vc: SettingsViewController
+    let service: RadioService
+    let player: Player
     
-    init(vc: SettingsViewController) {
-        self.vc = vc
+    private(set) weak var vc: SettingsViewController?
+    
+    init(service: RadioService, player: Player) {
+        self.service = service
+        self.player = player
     }
     
-    static func start() -> SettingsViewController {
-        let vc = SettingsViewController()
-        let coordinator = Self.init(vc: vc)
-        let vm = SettingsViewModel(coordinator: coordinator)
-        
-        vc.vm = vm
-        
-        return vc
+    @discardableResult
+    func start() -> VC {
+        // just return vc instance
+        SettingsViewController().then {
+            self.vc = $0
+            $0.vm = SettingsViewModel(coordinator: self)
+        }
     }
     
     func coordinate(_ location: Location) {

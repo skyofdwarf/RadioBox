@@ -15,9 +15,9 @@ protocol Coordinating {
 
 protocol Coordinator: AnyObject {
     associatedtype Location
-    associatedtype Base
+    associatedtype VC
     
-    var vc: Base { get }
+    var vc: VC? { get }
     
     func coordinate(_ location: Location)
 }

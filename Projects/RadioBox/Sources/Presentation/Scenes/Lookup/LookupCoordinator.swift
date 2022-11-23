@@ -13,30 +13,30 @@ final class LookupCoordinator: Coordinator {
         case home(String)
     }
     
-    unowned let window: UIWindow
-    unowned let vc: LookupViewController
-    
+    let window: UIWindow
     let player: Player
+    
+    private(set) weak var vc: LookupViewController?
 
     deinit {
         print("\(#file).\(#function)")
     }
     
-    init(window: UIWindow, vc: LookupViewController, player: Player) {
+    init(window: UIWindow, player: Player) {
         self.window = window
-        self.vc = vc
         self.player = player
     }
 
-    static func start(window: UIWindow, player: Player) {
-        let vc = LookupViewController()
-        let coordinator = Self.init(window: window, vc: vc, player: player)
-        let vm = LookupViewModel(coordinator: coordinator)
-
-        vc.vm = vm
-        
-        window.rootViewController = vc
-        window.makeKeyAndVisible()
+    @discardableResult
+    func start() -> UIViewController {
+        LookupViewController().then {
+            self.vc = $0
+            
+            $0.vm = LookupViewModel(coordinator: self)
+            
+            window.rootViewController = $0
+            window.makeKeyAndVisible()
+        }
     }
     
     func coordinate(_ location: Location) {

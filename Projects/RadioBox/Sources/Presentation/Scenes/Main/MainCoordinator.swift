@@ -13,9 +13,9 @@ final class MainCoordinator {
         let service = RadioService(baseURL: serverURL)
         
         let vc = MainViewController().then {
-            $0.viewControllers = [ HomeCoordinator.start(service: service, player: player),
-                                   SearchCoordinator.start(service: service, player: player),
-                                   SettingsCoordinator.start(),
+            $0.viewControllers = [ HomeCoordinator(service: service, player: player).start(),
+                                   SearchCoordinator(service: service, player: player).start(),
+                                   SettingsCoordinator(service: service, player: player).start(),
             ].map { $0.navigationRooted }
         }
 

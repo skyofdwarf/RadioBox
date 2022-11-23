@@ -13,20 +13,23 @@ final class HomeCoordinator: Coordinator {
     enum Location {
     }
     
-    unowned let vc: HomeViewController
+    let service: RadioService
+    let player: Player
     
-    init(vc: HomeViewController) {
-        self.vc = vc
+    private(set) weak var vc: HomeViewController?
+    
+    init(service: RadioService, player: Player) {
+        self.service = service
+        self.player = player
     }
     
-    static func start(service: RadioService, player: Player) -> HomeViewController {
-        let vc = HomeViewController()
-        let coordinator = Self.init(vc: vc)
-        let vm = HomeViewModel(service: service, coordinator: coordinator, player: player)
-        
-        vc.vm = vm
-        
-        return vc
+    @discardableResult
+    func start() -> VC {
+        // just return vc instance
+        HomeViewController().then {
+            self.vc = $0
+            $0.vm = HomeViewModel(service: service, coordinator: self, player: player)
+        }
     }
     
     func coordinate(_ location: Location) {

@@ -13,20 +13,23 @@ final class SearchCoordinator: Coordinator {
     enum Location {
     }
     
-    unowned let vc: SearchViewController
+    let service: RadioService
+    let player: Player
     
-    init(vc: SearchViewController) {
-        self.vc = vc
+    private(set) weak var vc: SearchViewController?
+    
+    init(service: RadioService, player: Player) {
+        self.service = service
+        self.player = player
     }
     
-    static func start(service: RadioService, player: Player) -> SearchViewController {
-        let vc = SearchViewController()
-        let coordinator = Self.init(vc: vc)
-        let vm = SearchViewModel(service: service, coordinator: coordinator, player: player)
-        
-        vc.vm = vm
-        
-        return vc
+    @discardableResult
+    func start() -> VC {
+        // just return vc instance
+        SearchViewController().then {
+            self.vc = $0
+            $0.vm = SearchViewModel(service: service, coordinator: self, player: player)
+        }
     }
     
     func coordinate(_ location: Location) {

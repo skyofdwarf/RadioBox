@@ -56,7 +56,7 @@ final class AppModel: CoordinatingViewModel<AppAction, AppMutation, AppEvent, Ap
     override func react(action: Action, state: State) -> Observable<Reaction> {
         switch action {
         case .start:
-            return .just(.event(.coordinate(.lookup(player))))
+            return .just(.event(.coordinate(.lookup)))
         }
     }
     

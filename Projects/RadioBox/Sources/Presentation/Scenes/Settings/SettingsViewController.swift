@@ -11,11 +11,13 @@ import Stevia
 import RxSwift
 import RxRelay
 import RxCocoa
+import WebKit
 
 class SettingsViewController: UIViewController {
     let label = UILabel()
     let radioImageView = UIImageView(image: UIImage(systemName: "antenna.radiowaves.left.and.right"))
     let indicatorView = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.large)
+    let webView = WKWebView(frame: .zero)
     
     var vm: SettingsViewModel!
     var dbag = DisposeBag()
@@ -54,6 +56,7 @@ class SettingsViewController: UIViewController {
     
     func layoutSubviews() {
         view.subviews {
+            webView
             label
             radioImageView
             indicatorView
@@ -66,11 +69,19 @@ class SettingsViewController: UIViewController {
         }
         
         radioImageView.centerInContainer()
+        webView.fillContainer()
     }
     
     func bindViewModel() {
         vm.state.$fetching
             .drive(indicatorView.rx.isAnimating)
+            .disposed(by: dbag)
+        
+        vm.state.$htmlContent
+            .drive { [weak self] html in
+                print(">> load html")
+                self?.webView.loadHTMLString(html, baseURL: nil)
+            }
             .disposed(by: dbag)
     }
 }
