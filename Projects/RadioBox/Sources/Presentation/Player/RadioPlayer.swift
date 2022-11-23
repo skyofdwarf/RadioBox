@@ -50,6 +50,8 @@ class RadioPlayer: NSObject, Player {
     private var playTarget: Any?
     private var pauseTarget: Any?
     
+    var isPlaying: Bool { player.timeControlStatus == .playing || player.timeControlStatus == .waitingToPlayAtSpecifiedRate }
+    
     deinit {
         player.removeObserver(self, forKeyPath: "timeControlStatus")
         
@@ -80,6 +82,13 @@ class RadioPlayer: NSObject, Player {
     }
     
     func play(station: RadioStation) {
+        if stationSubject.value?.stationuuid == station.stationuuid {
+            if !isPlaying {
+                player.play()
+            }
+            return
+        }
+        
         // dispose old item
         disposePlayerItem()
         
