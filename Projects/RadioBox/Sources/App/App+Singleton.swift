@@ -16,13 +16,11 @@ extension UIApplication {
     static let coordinator = AppCoordinator()
     static let model = AppModel(coordinator: coordinator, player: player)
     
-    var window: UIWindow { Self.coordinator.window }
-    
-    func start() {
-        UIApplication.model.send(action: .start)
-        
+    func start() -> UIWindow {
         configureAudioSession()
         configureRemoteCommandCenter()
+        
+        return UIApplication.coordinator.start()
     }
     
     func configureAudioSession() {

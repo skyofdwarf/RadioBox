@@ -10,20 +10,23 @@ import UIKit
 
 final class AppCoordinator: Coordinator {
     enum Location {
-        case lookup
     }
     
     let window: UIWindow = UIWindow(frame: UIScreen.main.bounds)
+    
+    var target: UIWindow? { window }
     var vc: UIViewController? { window.rootViewController }
     
     func coordinate(_ location: Location) {
-        switch location {
-        case .lookup:
-            LookupCoordinator(window: window, player: UIApplication.player).start()
-        }
     }
     
-    func start() {
-        UIApplication.model.send(action: .start)
+    func instantiateTarget() -> UIWindow {
+        window
+    }
+    
+    @discardableResult
+    func start() -> UIWindow {
+        LookupCoordinator(window: window, player: UIApplication.player).start()
+        return window
     }
 }

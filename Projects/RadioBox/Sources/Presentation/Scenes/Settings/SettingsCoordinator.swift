@@ -15,20 +15,24 @@ final class SettingsCoordinator: Coordinator {
     let service: RadioService
     let player: Player
     
-    private(set) weak var vc: SettingsViewController?
+    private(set) weak var target: SettingsViewController?
     
     init(service: RadioService, player: Player) {
         self.service = service
         self.player = player
     }
     
-    @discardableResult
-    func start() -> VC {
-        // just return vc instance
+    func instantiateTarget() -> SettingsViewController {
         SettingsViewController().then {
-            self.vc = $0
+            self.target = $0
             $0.vm = SettingsViewModel(coordinator: self)
         }
+    }
+    
+    @discardableResult
+    func start() -> SettingsViewController {
+        // just return vc instance
+        instantiateTarget()
     }
     
     func coordinate(_ location: Location) {

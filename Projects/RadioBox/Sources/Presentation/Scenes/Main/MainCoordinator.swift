@@ -8,6 +8,7 @@
 
 import UIKit
 import RxCocoa
+
 final class MainCoordinator {
     static func start(window: UIWindow, serverURL: URL, player: Player) {
         let service = RadioService(baseURL: serverURL)

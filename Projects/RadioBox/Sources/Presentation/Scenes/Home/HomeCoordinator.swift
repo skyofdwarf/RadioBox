@@ -16,20 +16,24 @@ final class HomeCoordinator: Coordinator {
     let service: RadioService
     let player: Player
     
-    private(set) weak var vc: HomeViewController?
+    private(set) weak var target: HomeViewController?
     
     init(service: RadioService, player: Player) {
         self.service = service
         self.player = player
     }
     
-    @discardableResult
-    func start() -> VC {
-        // just return vc instance
+    func instantiateTarget() -> HomeViewController {
         HomeViewController().then {
-            self.vc = $0
+            self.target = $0
             $0.vm = HomeViewModel(service: service, coordinator: self, player: player)
         }
+    }
+    
+    @discardableResult
+    func start() -> HomeViewController {
+        // just return vc instance
+        instantiateTarget()
     }
     
     func coordinate(_ location: Location) {

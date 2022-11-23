@@ -36,5 +36,6 @@ protocol Player: AnyObject {
     func play(station: RadioStation)
     func stop()
     
+    @discardableResult
     func toggle() -> Bool
 }

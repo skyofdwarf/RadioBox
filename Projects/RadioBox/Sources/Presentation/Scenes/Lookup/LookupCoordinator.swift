@@ -16,7 +16,7 @@ final class LookupCoordinator: Coordinator {
     let window: UIWindow
     let player: Player
     
-    private(set) weak var vc: LookupViewController?
+    private(set) weak var target: LookupViewController?
 
     deinit {
         print("\(#file).\(#function)")
@@ -26,13 +26,17 @@ final class LookupCoordinator: Coordinator {
         self.window = window
         self.player = player
     }
+    
+    func instantiateTarget() -> LookupViewController {
+        LookupViewController().then {
+            $0.vm = LookupViewModel(coordinator: self)
+        }
+    }
 
     @discardableResult
-    func start() -> UIViewController {
-        LookupViewController().then {
-            self.vc = $0
-            
-            $0.vm = LookupViewModel(coordinator: self)
+    func start() -> LookupViewController {
+        instantiateTarget().then {
+            self.target = $0
             
             window.rootViewController = $0
             window.makeKeyAndVisible()

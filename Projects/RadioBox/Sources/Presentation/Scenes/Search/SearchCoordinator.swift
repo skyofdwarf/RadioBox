@@ -16,20 +16,24 @@ final class SearchCoordinator: Coordinator {
     let service: RadioService
     let player: Player
     
-    private(set) weak var vc: SearchViewController?
+    private(set) weak var target: SearchViewController?
     
     init(service: RadioService, player: Player) {
         self.service = service
         self.player = player
     }
     
-    @discardableResult
-    func start() -> VC {
-        // just return vc instance
+    func instantiateTarget() -> SearchViewController {
         SearchViewController().then {
-            self.vc = $0
+            self.target = $0
             $0.vm = SearchViewModel(service: service, coordinator: self, player: player)
         }
+    }
+    
+    @discardableResult
+    func start() -> SearchViewController {
+        // just return vc instance
+        instantiateTarget()
     }
     
     func coordinate(_ location: Location) {

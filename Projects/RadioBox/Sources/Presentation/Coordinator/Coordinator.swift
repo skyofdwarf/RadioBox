@@ -6,7 +6,7 @@
 //  Copyright © 2022 dwarfini. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 protocol Coordinating {
     associatedtype Location
@@ -15,10 +15,26 @@ protocol Coordinating {
 
 protocol Coordinator: AnyObject {
     associatedtype Location
-    associatedtype VC
+    associatedtype Target
     
-    var vc: VC? { get }
+    /// A target currently managed by coordinator
+    var target: Target? { get }
+        
+    /// Instantiates a new target. this instance is not managed yet by this coordinator
+    /// You should call this method to create a new target instance in `start()` or outside of the coordinator.
+    /// - Returns: new target instance
+    func instantiateTarget() -> Target
     
+    /// Coordinates to target managed by this coordinator
+    /// - Returns: a target instance created
+    @discardableResult
+    func start() -> Target
+    
+    /// Coordinates to location from target
+    /// - Parameter location: target to locate
     func coordinate(_ location: Location)
 }
 
+extension Coordinator {
+    func coordinate(_ location: Location) {}
+}
