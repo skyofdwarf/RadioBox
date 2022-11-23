@@ -18,6 +18,8 @@ class StationViewController: UIViewController {
     let tagsLabel = UILabel()
     let infoLabel = UILabel()
     
+    let playerBar = PlayerBar()
+    
     var vm: StationViewModel!
     
     private(set) var dbag = DisposeBag()
@@ -33,7 +35,7 @@ class StationViewController: UIViewController {
         
         configureSubviews()
         bindViewModel()
-//        bindPlayer()
+        bindPlayer()
     }
     
     func configureSubviews() {
@@ -76,6 +78,7 @@ class StationViewController: UIViewController {
                     tagsLabel
                 }
             }
+            playerBar
             indicatorView
         }
         
@@ -104,13 +107,13 @@ class StationViewController: UIViewController {
         
         indicatorView.centerInContainer()
         
-//        playerBar.fillHorizontally()
-//        playerBar.Top == view.safeAreaLayoutGuide.Bottom
-//
-//        additionalSafeAreaInsets = UIEdgeInsets(top: 0,
-//                                                left: 0,
-//                                                bottom: playerBar.intrinsicContentSize.height,
-//                                                right: 0)
+        playerBar.fillHorizontally()
+        playerBar.Top == view.safeAreaLayoutGuide.Bottom
+
+        additionalSafeAreaInsets = UIEdgeInsets(top: 0,
+                                                left: 0,
+                                                bottom: playerBar.intrinsicContentSize.height,
+                                                right: 0)
     }
     
     func bindViewModel() {
@@ -144,7 +147,7 @@ class StationViewController: UIViewController {
 //            .disposed(by: dbag)
     }
     
-//    func bindPlayer() {
-//        playerBar.bind(player: vm.player)
-//    }
+    func bindPlayer() {
+        playerBar.bind(player: vm.player)
+    }
 }
