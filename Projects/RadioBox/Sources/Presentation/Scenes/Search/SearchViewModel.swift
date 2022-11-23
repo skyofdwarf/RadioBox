@@ -93,7 +93,7 @@ extension SearchViewModel {
     }
     
     func searchKeyword(_ keyword: String?, page: Int) -> Observable<Reaction> {
-        guard let keyword, !state.fetching, state.hasNextPage else {
+        guard let keyword, !state.fetching, (page == 0 || state.hasNextPage) else {
             return .empty()
         }
         let limit = Constant.PageLimit
