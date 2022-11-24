@@ -43,7 +43,7 @@ final class HomeCoordinator: Coordinator {
         case .station(let station):
             createStationCoordinator(with: station).start()
         case .pop(let vc):
-            target?.navigationController?.pushViewController(vc, animated: true)
+            target?.present(vc, animated: true)
         }
     }
 }

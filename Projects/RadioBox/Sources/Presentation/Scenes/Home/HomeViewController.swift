@@ -43,9 +43,8 @@ class HomeViewController: UIViewController {
         
         view.backgroundColor = .systemBackground
         
-        configureSubviews()        
+        configureSubviews()
         bindViewModel()
-        bindPlayer()
         
         vm.send(action: .ready)
     }
@@ -66,8 +65,7 @@ class HomeViewController: UIViewController {
     func layoutSubviews() {
         view.subviews (
             cv,
-            indicatorView,
-            playerBar
+            indicatorView
         )
         
         view.layout {
@@ -75,14 +73,6 @@ class HomeViewController: UIViewController {
         
         cv.fillContainer()
         indicatorView.centerInContainer()
-        
-        playerBar.fillHorizontally()
-        playerBar.Top == view.safeAreaLayoutGuide.Bottom
-        
-        additionalSafeAreaInsets = UIEdgeInsets(top: 0,
-                                                left: 0,
-                                                bottom: playerBar.intrinsicContentSize.height,
-                                                right: 0)
     }
     
     func bindViewModel() {
@@ -97,10 +87,6 @@ class HomeViewController: UIViewController {
                 vc.applyDataSource(stations: stations)
             })
             .disposed(by: dbag)
-    }
-    
-    func bindPlayer() {
-        playerBar.bind(player: vm.player)
     }
 }
 

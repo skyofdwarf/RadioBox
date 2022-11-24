@@ -22,8 +22,6 @@ class SearchViewController: UIViewController {
     let searchBar = UISearchBar()
     let queryRelay = PublishRelay<String?>()
     
-    let playerBar = PlayerBar()
-    
     var vm: SearchViewModel!
     var dbag = DisposeBag()
     
@@ -47,7 +45,6 @@ class SearchViewController: UIViewController {
         configureSubviews()
         
         bindViewModel()
-        bindPlayer()
         
 //        vm.send(action: .lookup)
     }
@@ -77,7 +74,6 @@ class SearchViewController: UIViewController {
             cv!
             label
             indicatorView
-            playerBar
         }
         
         view.layout {
@@ -87,14 +83,6 @@ class SearchViewController: UIViewController {
         
         cv.fillContainer()
         indicatorView.centerInContainer()
-        
-        playerBar.fillHorizontally()
-        playerBar.Top == view.safeAreaLayoutGuide.Bottom
-        
-        additionalSafeAreaInsets = UIEdgeInsets(top: 0,
-                                                left: 0,
-                                                bottom: playerBar.intrinsicContentSize.height,
-                                                right: 0)
     }
     
     func bindViewModel() {
@@ -114,11 +102,7 @@ class SearchViewController: UIViewController {
             .map { !$0.isEmpty }
             .drive(label.rx.isHidden)
             .disposed(by: dbag)
-    }
-        
-    func bindPlayer() {
-        playerBar.bind(player: vm.player)
-        
+
         vm.state.$stations
             .drive(with: self) { this, stations in
                 this.applyDataSource(stations: stations)
