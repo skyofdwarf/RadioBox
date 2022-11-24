@@ -11,6 +11,8 @@ import RDXVM
 
 final class SearchCoordinator: Coordinator {
     enum Location {
+        case station(RadioStation)
+        case pop(UIViewController)
     }
     
     let service: RadioService
@@ -38,6 +40,27 @@ final class SearchCoordinator: Coordinator {
     
     func coordinate(_ location: Location) {
         switch location {
+        case .station(let station):
+            createStationCoordinator(with: station).start()
+        case .pop(let vc):
+            target?.present(vc, animated: true)
         }
+    }
+}
+
+extension SearchCoordinator {
+    func contextMenu(for station: RadioStation) -> UIContextMenuConfiguration? {
+        UIContextMenuConfiguration(identifier: station.stationuuid as NSString,
+                                   previewProvider: { [weak self] () -> UIViewController? in
+            guard let self else { return nil }
+            return self.createStationCoordinator(with: station).instantiateTarget()
+        }, actionProvider: nil)
+    }
+    
+    func createStationCoordinator(with station: RadioStation) -> StationCoordinator {
+        StationCoordinator(station: station,
+                           service: service,
+                           player: player,
+                           nc: target?.navigationController)
     }
 }

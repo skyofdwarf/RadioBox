@@ -252,6 +252,28 @@ extension SearchViewController: UICollectionViewDelegate {
             vm.send(action: .trySearchNextPage)
         }
     }
+    
+    
+    func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        guard let station = dataSource.itemIdentifier(for: indexPath),
+              let coordinator = vm.coordinator as? SearchCoordinator
+        else {
+            return nil
+        }
+        
+        return coordinator.contextMenu(for: station)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, willPerformPreviewActionForMenuWith configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionCommitAnimating) {
+        guard let vc = animator.previewViewController else {
+            return
+        }
+        
+        animator.addCompletion { [weak self] in
+            guard let coordinator = self?.vm.coordinator as? SearchCoordinator else { return }
+            coordinator.coordinate(.pop(vc))
+        }
+    }
 }
 
 // MARK: UISearchBarDelegate
