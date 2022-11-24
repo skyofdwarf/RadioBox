@@ -11,8 +11,9 @@ import Stevia
 import Kingfisher
 
 class StationCell: UICollectionViewCell {
-    let label = UILabel()
     let imageView = UIImageView()
+    let infoLabel = UILabel()
+    let nameLabel = UILabel()
     
     var task: DownloadTask?
     
@@ -33,38 +34,48 @@ class StationCell: UICollectionViewCell {
     }
     
     func setup() {
-        label.numberOfLines = 2
-        label.textAlignment = .center
-        label.textColor = UIColor.label
-        label.font = UIFont.preferredFont(forTextStyle: .caption1)
-        label.adjustsFontForContentSizeCategory = true
-        label.minimumScaleFactor = 0.6
-        label.adjustsFontSizeToFitWidth = true
+        infoLabel.numberOfLines = 1
+        infoLabel.textAlignment = .center
+        infoLabel.textColor = UIColor.label
+        infoLabel.font = UIFont.preferredFont(forTextStyle: .caption2)
+        infoLabel.adjustsFontForContentSizeCategory = true
+        
+        nameLabel.numberOfLines = 0
+        nameLabel.textAlignment = .center
+        nameLabel.textColor = UIColor.label
+        nameLabel.font = UIFont.preferredFont(forTextStyle: .caption1)
+        nameLabel.adjustsFontForContentSizeCategory = true
         
         imageView.clipsToBounds = true
         imageView.contentMode = .scaleAspectFill
-        imageView.backgroundColor = .systemGroupedBackground
         imageView.tintColor = .secondaryLabel
         
         let imageViewContainer = UIView()
+        imageViewContainer.backgroundColor = .systemGroupedBackground
+        imageViewContainer.clipsToBounds = true
         
-        subviews(
-            imageViewContainer.subviews(
+        subviews {
+            imageViewContainer.subviews {
                 imageView
-            ),
-            label
-        )
+            }
+            infoLabel
+            nameLabel
+        }
         
         layout {
             0
             |imageViewContainer|
-            0
-            |-4-label-4-|
+            |infoLabel|
+            4
+            |-4-nameLabel-4-|
             >=0
         }
         
         imageViewContainer.heightEqualsWidth()
         imageView.fillContainer()
+        
+        infoLabel.height(12)
+        nameLabel.height(>=14)
     }
     
     func configure(station: RadioStation) {
@@ -75,6 +86,8 @@ class StationCell: UICollectionViewCell {
                                      placeholder: UIImage(systemName: "radio"),
                                      options: [ .transition(.fade(0.3)) ])
         
-        label.text = station.name
+        
+        infoLabel.text = "\(station.codec) / \(station.bitrate)"
+        nameLabel.text = station.name
     }
 }

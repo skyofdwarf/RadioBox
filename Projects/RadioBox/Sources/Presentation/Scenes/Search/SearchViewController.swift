@@ -195,24 +195,24 @@ extension SearchViewController {
     static func verticalStationList() -> NSCollectionLayoutSection {
         let sectionInset = 10.0
         let itemSpacing = 5.0
-        let itemCountInLIne = 3.0
-        let contentWidth = UIScreen.main.bounds.width - (sectionInset * 2)
-        let itemWidth = ceil((contentWidth - (itemSpacing * (itemCountInLIne - 1))) / itemCountInLIne)
+        let itemCountInLine = 3.0
+        let contentWidth = UIScreen.main.bounds.width - (sectionInset * 2) - ((itemCountInLine - 1) * itemSpacing)
+        let itemWidth = floor(contentWidth / itemCountInLine)
         let itemHeight = itemWidth + 40
         
         let itemSize = NSCollectionLayoutSize(widthDimension: .absolute(itemWidth),
-                                              heightDimension: .absolute(itemHeight))
+                                              heightDimension: .estimated(itemHeight))
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         
         let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
-                                               heightDimension: .absolute(itemHeight))
+                                               heightDimension: .estimated(itemHeight))
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
         
         group.interItemSpacing = .flexible(itemSpacing)
         
         return NSCollectionLayoutSection(group: group).then {
             $0.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: sectionInset, bottom: 0, trailing: sectionInset)
-            $0.interGroupSpacing = 6
+            $0.interGroupSpacing = 0
         }
     }
 }
