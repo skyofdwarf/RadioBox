@@ -15,5 +15,9 @@ class MainViewController: UITabBarController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        if #available(iOS 15.0, *) {
+            tabBar.scrollEdgeAppearance = tabBar.standardAppearance
+        }
     }
 }
