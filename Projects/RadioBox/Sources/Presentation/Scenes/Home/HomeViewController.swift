@@ -27,7 +27,7 @@ class HomeViewController: UIViewController {
     init() {
         super.init(nibName: nil, bundle: nil)
         
-        title = "RadioBox"
+        title = "Most voted"
         
         tabBarItem = UITabBarItem(title: "Home",
                                   image: UIImage(systemName: "dot.radiowaves.left.and.right"),
