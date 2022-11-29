@@ -13,12 +13,14 @@ import Combine
 import MediaPlayer
 
 extension PlayerStatus {
-    var image: UIImage? {
+    var image: UIImage? { UIImage(systemName: symbolName) }
+    
+    var symbolName: String {
         switch self {
-        case .playing: return UIImage(systemName: "stop")
-        case .stopped: return UIImage(systemName: "play")
-        case .waitingToPlay: return UIImage(systemName: "waveform.path")
-        case .disabled: return UIImage(systemName: "play")
+        case .playing: return "stop.fill"
+        case .stopped: return "play.fill"
+        case .waitingToPlay: return "waveform.path"
+        case .disabled: return "play.fill"
         }
     }
 }

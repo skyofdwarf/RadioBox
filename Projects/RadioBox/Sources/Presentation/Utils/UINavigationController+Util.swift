@@ -7,10 +7,9 @@
 //
 
 import UIKit
+import AVKit
 
 extension UIViewController {
-//    var navigationRooted: UINavigationController { CustomNavigationController(rootViewController: self) }
-    
     var navigationRooted: UINavigationController {
         let nc = CustomNavigationController(navigationBarClass: nil, toolbarClass: PlayerBar.self)
         nc.viewControllers = [ self ]
@@ -18,6 +17,10 @@ extension UIViewController {
         
         if let playerBar = navigationController?.toolbar as? PlayerBar {
             playerBar.bind(player: UIApplication.player)
+                
+            
+            let tap = UITapGestureRecognizer(target: self, action: #selector(playerBarDidTap(_:)))
+            playerBar.addGestureRecognizer(tap)
         }
         
         // ensure toolbar is visible even on scroll edge
@@ -26,5 +29,13 @@ extension UIViewController {
         }
         
         return nc
+    }
+    
+    @objc func playerBarDidTap(_ recognizer: UITapGestureRecognizer) {
+        guard let playerBar = navigationController?.toolbar as? PlayerBar,
+              let player = playerBar.player
+        else { return }
+        
+        UIApplication.model.send(action: .showPlayer(player, from: self))
     }
 }

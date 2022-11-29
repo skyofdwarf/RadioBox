@@ -12,6 +12,7 @@ import RadioBrowser
 import RxSwift
 
 enum AppAction {
+    case showPlayer(Player, from: UIViewController)
 }
 
 enum AppMutation {
@@ -24,6 +25,8 @@ enum AppEvent {
 extension AppEvent: Coordinating {
     var location: AppCoordinator.Location? {
         switch self {
+        case .coordinate(let location):
+            return location
         default: return nil
         }
     }
@@ -42,6 +45,8 @@ final class AppModel: CoordinatingViewModel<AppAction, AppMutation, AppEvent, Ap
     
     override func react(action: Action, state: State) -> Observable<Reaction> {
         switch action {
+        case .showPlayer(let player, let vc):
+            return .just(.event(.coordinate(.player(player, from: vc))))
         }
     }
     

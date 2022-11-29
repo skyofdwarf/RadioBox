@@ -10,14 +10,19 @@ import UIKit
 
 final class AppCoordinator: Coordinator {
     enum Location {
+        case player(Player, from: UIViewController)
     }
     
     let window: UIWindow = UIWindow(frame: UIScreen.main.bounds)
     
     var target: UIWindow? { window }
-    var vc: UIViewController? { window.rootViewController }
+    var rootViewController: UIViewController? { window.rootViewController }
     
     func coordinate(_ location: Location) {
+        switch location {
+        case .player(let player, let vc):
+            PlayerCoordinator(from: vc, player: player).start()
+        }
     }
     
     func instantiateTarget() -> UIWindow {
