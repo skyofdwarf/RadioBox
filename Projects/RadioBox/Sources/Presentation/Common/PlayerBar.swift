@@ -41,9 +41,11 @@ class PlayerBar: UIToolbar {
         playButton = UIButton(type: .system).then {
             $0.setImage(PlayerStatus.disabled.image, for: .normal)
         }
+    
         faviconImageView = UIImageView().then {
-            $0.contentMode = .scaleAspectFill
+            $0.contentMode = .scaleAspectFit
             $0.clipsToBounds = true
+            $0.layer.cornerRadius = 5
             $0.tintColor = .secondaryLabel
             $0.backgroundColor = .systemGroupedBackground
         }
@@ -86,6 +88,7 @@ class PlayerBar: UIToolbar {
         let container = UIView().then {
             $0.clipsToBounds = true
         }
+        let faviconContainer = UIView()
         
         let infoStackView = UIStackView(arrangedSubviews: [titleLabel, artistLabel]).then {
             $0.axis = .vertical
@@ -94,22 +97,30 @@ class PlayerBar: UIToolbar {
         
         subviews {
             container.subviews {
-                faviconImageView
+                faviconContainer.subviews {
+                    faviconImageView
+                }
                 infoStackView
                 playButton
             }
         }
         
         container.layout {
-            0
-            |faviconImageView-infoStackView-playButton|
-            0
+            5
+            |-10-faviconContainer-infoStackView-playButton|
+            5
         }
+
+        faviconContainer.heightEqualsWidth()
+        faviconImageView.centerInContainer()
+        faviconImageView.Width == faviconContainer.Width
+        faviconImageView.heightEqualsWidth()
         
+        faviconImageView.CenterX == faviconContainer.CenterX
+        faviconImageView.CenterY == faviconContainer.CenterY
+
         container.fillContainer()
-        infoStackView.centerVertically()
         playButton.size(Self.barHeight)
-        faviconImageView.size(Self.barHeight)
     }
     
     func updatePlayButton(status: PlayerStatus) {
@@ -140,13 +151,27 @@ class PlayerBar: UIToolbar {
     }
     
     func updateFavicon(url: URL?) {
+        func fixFaviconVerticalOffset() {
+            guard let image = faviconImageView.image else { return }
+            
+            faviconImageView.centerYConstraint?.constant = image.alignmentRectInsets.top
+        }
+        
         guard let url else {
             faviconImageView.image = UIImage(systemName: "radio")
+            fixFaviconVerticalOffset()
             return
         }
+        
         faviconImageView.kf.setImage(with: url,
-                                     placeholder: UIImage(systemName: "radio"),
-                                     options: [ .transition(.fade(0.3)) ])
+                                     placeholder: UIImage(systemName: "radio")?.imageWithoutBaseline(),
+                                     options: [ .transition(.fade(0.3)) ]) {
+            switch $0 {
+            case .success:
+                fixFaviconVerticalOffset()
+            default: break
+            }
+        }
     }
                 
     func bind(player: Player) {
