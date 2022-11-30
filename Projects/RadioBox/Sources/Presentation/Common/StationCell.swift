@@ -53,6 +53,7 @@ class StationCell: UICollectionViewCell {
         let imageViewContainer = UIView()
         imageViewContainer.backgroundColor = .systemGroupedBackground
         imageViewContainer.clipsToBounds = true
+        imageViewContainer.layer.cornerRadius = 10
         
         subviews {
             imageViewContainer.subviews {
