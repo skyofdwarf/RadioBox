@@ -8,130 +8,123 @@
 
 import UIKit
 import Stevia
+import SnapKit
 import RxSwift
+import Combine
+import Kingfisher
 
 class StationViewController: UIViewController {
-    let scrollView = UIScrollView()
-    let indicatorView = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.large)
+    let imageContainerView = UIView()
+    let stationInfoStackView = UIStackView()
+    
     let imageView = UIImageView()
-    let nameLabel = UILabel()
-    let tagsLabel = UILabel()
-    let infoLabel = UILabel()
+    let stationNameLabel = UILabel()
+    let stationSpecLabel = UILabel()
+    let stationTagsLabel = UILabel()
     
     var vm: StationViewModel!
     
     private(set) var dbag = DisposeBag()
+    private(set) var cbag: [AnyCancellable] = []
     
     deinit {
         print("\(#file).\(#function)")
     }
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         view.backgroundColor = .systemBackground
         
         configureSubviews()
         bindViewModel()
     }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        preferredContentSize = imageContainerView.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize)
+    }
+    
     func configureSubviews() {
-        scrollView.backgroundColor = .systemBackground
-        
-        indicatorView.color = .red
-        indicatorView.hidesWhenStopped = true
-        
         imageView.contentMode = .scaleAspectFit
         imageView.clipsToBounds = true
+        imageView.tintColor = .systemGray
+        imageView.layer.cornerRadius = 10
         
-        nameLabel.font = .preferredFont(forTextStyle: .title1)
-        nameLabel.numberOfLines = 0
-        nameLabel.textColor = .label
-        nameLabel.textAlignment = .center
-        
-        tagsLabel.font = .preferredFont(forTextStyle: .caption1)
-        tagsLabel.numberOfLines = 0
-        tagsLabel.textColor = .label
-        tagsLabel.textAlignment = .center
-        
-        infoLabel.font = .preferredFont(forTextStyle: .caption1)
-        infoLabel.numberOfLines = 1
-        infoLabel.textColor = .label
-        infoLabel.textAlignment = .center
+        stationInfoStackView.axis = .vertical
+        stationNameLabel.font = .preferredFont(forTextStyle: .caption2)
+        stationSpecLabel.font = .preferredFont(forTextStyle: .caption2)
+        stationTagsLabel.font = .preferredFont(forTextStyle: .caption2)
+        stationNameLabel.textColor = .secondaryLabel
+        stationSpecLabel.textColor = .tertiaryLabel
+        stationTagsLabel.textColor = .tertiaryLabel
+        stationNameLabel.textAlignment = .center
+        stationSpecLabel.textAlignment = .center
+        stationTagsLabel.textAlignment = .center
+        stationTagsLabel.numberOfLines = 3
         
         layoutSubviews()
     }
     
     func layoutSubviews() {
-        let contentView = UIView()
-        contentView.backgroundColor = .systemBackground
+        let mainContainerStackView = UIStackView().then {
+            $0.axis = .vertical
+            $0.spacing = 0
+            $0.addArrangedSubview(imageContainerView)
+        }
         
         view.subviews {
-            scrollView.subviews {
-                contentView.subviews {
-                    imageView
-                    infoLabel
-                    nameLabel
-                    tagsLabel
-                }
-            }
-            indicatorView
+            mainContainerStackView
         }
         
-        scrollView.fillContainer()
-        scrollView.layout {
-            0
-            |contentView|
-            0
-        }
-        
-        contentView.Width == scrollView.Width
-        contentView.layout {
-            0
+        imageContainerView.subviews {
             imageView
-            16
-            |-24-nameLabel-24-|
-            4
-            |-24-infoLabel-24-|
-            16
-            |-24-tagsLabel-24-|
-            >=12
+            stationInfoStackView
         }
         
-        imageView.size(240)
-        imageView.CenterX == contentView.CenterX
+        stationInfoStackView.addArrangedSubview(stationNameLabel)
+        stationInfoStackView.addArrangedSubview(stationSpecLabel)
+        stationInfoStackView.addArrangedSubview(stationTagsLabel)
         
-        indicatorView.centerInContainer()
+        mainContainerStackView.snp.makeConstraints {
+            $0.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+            $0.leading.trailing.equalToSuperview()
+            $0.bottom.lessThanOrEqualTo(view.safeAreaLayoutGuide.snp.bottom)
+        }
+        
+        imageView.snp.makeConstraints {
+            $0.top.leading.trailing.greaterThanOrEqualToSuperview().inset(60)
+            $0.centerX.equalToSuperview()
+            $0.width.greaterThanOrEqualTo(240)
+            $0.height.equalTo(imageView.snp.width)
+        }
+        
+        stationInfoStackView.snp.makeConstraints {
+            $0.leading.trailing.equalToSuperview().inset(60)
+            $0.top.equalTo(imageView.snp.bottom).offset(4)
+            $0.bottom.equalToSuperview().offset(-4)
+        }
     }
     
     func bindViewModel() {
-        imageView.kf.setImage(with: URL(string: vm.state.station.favicon),
-                              placeholder: UIImage(systemName: "radio"),
-                              options: [ .transition(.fade(0.3)) ])
-        
-        let station = vm.state.station
-        
-        let info = [station.codec, String(station.bitrate), station.country]
-            .filter { !$0.trimmingCharacters(in: CharacterSet.whitespaces).isEmpty }
-            .joined(separator: " / ")
-        
-        infoLabel.text = info
-        nameLabel.text = station.name
-        tagsLabel.text = station.tags
-            .split(separator: ",")
-            .map { $0.trimmingCharacters(in: CharacterSet.whitespaces) }
-            .map { $0.hasPrefix("#") ? $0 : "#\($0)" }
-            .joined(separator: " ")
-        
-        vm.state.$fetching
-            .drive(indicatorView.rx.isAnimating)
-            .disposed(by: dbag)
-        
-//        vm.state.$favorited
-//            .withUnretained(self)
-//            .drive((onNext: { vc, stations in
-//                vc.applyDataSource(stations: stations)
-//            })
-//            .disposed(by: dbag)
+        vm.state.map(\.station)
+            .drive(with: self) { this, station in
+                let info = [station.codec, String(station.bitrate), station.country]
+                    .filter { !$0.trimmingCharacters(in: CharacterSet.whitespaces).isEmpty }
+                    .joined(separator: " / ")
+                
+                this.stationNameLabel.text = station.name
+                this.stationSpecLabel.text = info
+                this.stationTagsLabel.text = station.tags
+                    .split(separator: ",")
+                    .map { $0.trimmingCharacters(in: CharacterSet.whitespaces) }
+                    .map { $0.hasPrefix("#") ? $0 : "#\($0)" }
+                    .joined(separator: " ")
+                
+                this.imageView.kf.setImage(with: URL(string: station.favicon),
+                                           placeholder: UIImage(systemName: "radio"),
+                                           options: [ .transition(.fade(0.3)) ])
+            }.disposed(by: dbag)
     }
 }

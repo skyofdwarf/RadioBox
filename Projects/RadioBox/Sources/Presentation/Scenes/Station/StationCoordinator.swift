@@ -14,8 +14,6 @@ final class StationCoordinator: Coordinator {
     }
     
     let station: RadioStation
-    let service: RadioService
-    let player: Player
     let nc: UINavigationController?
     
     private(set) weak var target: StationViewController?
@@ -24,10 +22,8 @@ final class StationCoordinator: Coordinator {
         print("\(#file).\(#function)")
     }
     
-    init(station: RadioStation, service: RadioService, player: Player, nc: UINavigationController?) {
+    init(station: RadioStation, nc: UINavigationController?) {
         self.station = station
-        self.service = service
-        self.player = player
         
         self.nc = nc
     }
@@ -35,9 +31,7 @@ final class StationCoordinator: Coordinator {
     func instantiateTarget() -> StationViewController {
         StationViewController().then {
             $0.vm = StationViewModel(station: station,
-                                     service: service,
-                                     coordinator: self,
-                                     player: player)
+                                     coordinator: self)
         }
     }
     

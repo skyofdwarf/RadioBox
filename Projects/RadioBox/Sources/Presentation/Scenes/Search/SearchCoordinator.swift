@@ -47,20 +47,3 @@ final class SearchCoordinator: Coordinator {
         }
     }
 }
-
-extension SearchCoordinator {
-    func contextMenu(for station: RadioStation) -> UIContextMenuConfiguration? {
-        UIContextMenuConfiguration(identifier: station.stationuuid as NSString,
-                                   previewProvider: { [weak self] () -> UIViewController? in
-            guard let self else { return nil }
-            return self.createStationCoordinator(with: station).instantiateTarget()
-        }, actionProvider: nil)
-    }
-    
-    func createStationCoordinator(with station: RadioStation) -> StationCoordinator {
-        StationCoordinator(station: station,
-                           service: service,
-                           player: player,
-                           nc: target?.navigationController)
-    }
-}

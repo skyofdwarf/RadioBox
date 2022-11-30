@@ -43,24 +43,24 @@ final class HomeCoordinator: Coordinator {
         case .station(let station):
             createStationCoordinator(with: station).start()
         case .pop(let vc):
-            target?.present(vc, animated: true)
+            guard let stationVC = vc as? StationViewController else { return }
+            target?.navigationController?.pushViewController(stationVC, animated: true)
         }
     }
 }
 
-extension HomeCoordinator {
+extension Coordinator where Target: UIViewController {
     func contextMenu(for station: RadioStation) -> UIContextMenuConfiguration? {
         UIContextMenuConfiguration(identifier: station.stationuuid as NSString,
                                    previewProvider: { [weak self] () -> UIViewController? in
             guard let self else { return nil }
+
             return self.createStationCoordinator(with: station).instantiateTarget()
         }, actionProvider: nil)
     }
     
     func createStationCoordinator(with station: RadioStation) -> StationCoordinator {
         StationCoordinator(station: station,
-                           service: service,
-                           player: player,
                            nc: target?.navigationController)
     }
 }

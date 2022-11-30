@@ -42,13 +42,7 @@ struct StationState {
 }
 
 final class StationViewModel: CoordinatingViewModel<StationAction, StationMutation, StationEvent, StationState> {
-    let service: RadioService
-    let player: Player
-        
-    init<C: Coordinator>(station: RadioStation, service: RadioService, coordinator: C, player: Player) where C.Location == Event.Location {
-        self.service = service
-        self.player = player
-        
+    init<C: Coordinator>(station: RadioStation, coordinator: C) where C.Location == Event.Location {
         super.init(coordinator: coordinator,
                    state: State(station: station, favorited: false)
         )
