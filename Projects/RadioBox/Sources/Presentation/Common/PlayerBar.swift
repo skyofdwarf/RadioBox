@@ -47,7 +47,6 @@ class PlayerBar: UIToolbar {
             $0.clipsToBounds = true
             $0.layer.cornerRadius = 5
             $0.tintColor = .secondaryLabel
-            $0.backgroundColor = .systemGroupedBackground
         }
         titleLabel = UILabel().then {
             $0.font = UIFont.preferredFont(for: .callout, weight: .semibold)
