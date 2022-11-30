@@ -47,9 +47,9 @@ class StationCell: UICollectionViewCell {
         nameLabel.adjustsFontForContentSizeCategory = true
         
         imageView.clipsToBounds = true
-        imageView.contentMode = .scaleAspectFill
+        imageView.contentMode = .scaleAspectFit
         imageView.tintColor = .secondaryLabel
-        
+                
         let imageViewContainer = UIView()
         imageViewContainer.backgroundColor = .systemGroupedBackground
         imageViewContainer.clipsToBounds = true

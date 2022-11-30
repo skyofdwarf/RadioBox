@@ -47,7 +47,7 @@ class PlayerViewController: UIViewController {
     }
 
     func configureSubviews() {
-        imageView.contentMode = .scaleAspectFill
+        imageView.contentMode = .scaleAspectFit
         imageView.clipsToBounds = true
         imageView.tintColor = .systemGray
         imageView.layer.cornerRadius = 10

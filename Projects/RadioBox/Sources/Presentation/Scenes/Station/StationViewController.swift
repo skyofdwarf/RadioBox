@@ -41,7 +41,7 @@ class StationViewController: UIViewController {
         indicatorView.color = .red
         indicatorView.hidesWhenStopped = true
         
-        imageView.contentMode = .scaleAspectFill
+        imageView.contentMode = .scaleAspectFit
         imageView.clipsToBounds = true
         
         nameLabel.font = .preferredFont(forTextStyle: .title1)
