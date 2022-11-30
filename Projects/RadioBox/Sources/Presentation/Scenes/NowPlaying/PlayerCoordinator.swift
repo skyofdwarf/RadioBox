@@ -13,7 +13,7 @@ final class PlayerCoordinator: Coordinator {
     enum Location {
     }
     
-    let from: UIViewController
+    let from: UIViewController?
     let player: Player
     
     var target: PlayerViewController?
@@ -22,7 +22,7 @@ final class PlayerCoordinator: Coordinator {
         print("\(#file).\(#function)")
     }
     
-    init(from: UIViewController, player: Player) {
+    init(from: UIViewController?, player: Player) {
         self.from = from
         self.player = player
     }
@@ -38,7 +38,7 @@ final class PlayerCoordinator: Coordinator {
     func start() -> PlayerViewController {
         instantiateTarget().then {
             target = $0
-            from.present($0, animated: true)
+            from?.present($0, animated: true)
         }
     }
     
