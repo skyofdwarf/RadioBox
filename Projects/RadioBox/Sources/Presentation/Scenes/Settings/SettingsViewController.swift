@@ -14,8 +14,6 @@ import RxCocoa
 import WebKit
 
 class SettingsViewController: UIViewController {
-    let label = UILabel()
-    let radioImageView = UIImageView(image: UIImage(systemName: "antenna.radiowaves.left.and.right"))
     let indicatorView = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.large)
     let webView = WKWebView(frame: .zero)
     
@@ -25,8 +23,10 @@ class SettingsViewController: UIViewController {
     init() {
         super.init(nibName: nil, bundle: nil)
         
-        tabBarItem = UITabBarItem(title: "Settings",
-                                  image: UIImage(systemName: "gear"),
+        title = "RadioBox"
+        
+        tabBarItem = UITabBarItem(title: "About",
+                                  image: UIImage(systemName: "info.circle"),
                                   tag: 0)
     }
     
@@ -42,33 +42,22 @@ class SettingsViewController: UIViewController {
         configureSubviews()
         layoutSubviews()
         bindViewModel()
-        
-//        vm.send(action: .lookup)
     }
     
     func configureSubviews() {
-        label.text = "Settings"
-        label.textAlignment = .center
-        radioImageView.contentMode = .scaleAspectFit
         indicatorView.color = .red
         indicatorView.hidesWhenStopped = true
+        
+        webView.navigationDelegate = self
     }
     
     func layoutSubviews() {
         view.subviews {
             webView
-            label
-            radioImageView
             indicatorView
         }
         
-        view.layout {
-            |-label-|
-            radioImageView.size(200)
-            |-indicatorView-|
-        }
-        
-        radioImageView.centerInContainer()
+        indicatorView.centerInContainer()
         webView.fillContainer()
     }
     
@@ -83,5 +72,23 @@ class SettingsViewController: UIViewController {
                 self?.webView.loadHTMLString(html, baseURL: nil)
             }
             .disposed(by: dbag)
+    }
+}
+
+extension SettingsViewController: WKNavigationDelegate {
+    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, preferences: WKWebpagePreferences, decisionHandler: @escaping (WKNavigationActionPolicy, WKWebpagePreferences) -> Void) {
+        guard let url = navigationAction.request.url else {
+            decisionHandler(.allow, preferences)
+            return
+        }
+        
+        let allowed = [ "about:blank" ]
+        let allows = allowed.contains(url.absoluteString)
+        
+        if !allows {
+            UIApplication.shared.open(url)
+        }
+        
+        decisionHandler(allows ? .allow: .cancel, preferences)
     }
 }
