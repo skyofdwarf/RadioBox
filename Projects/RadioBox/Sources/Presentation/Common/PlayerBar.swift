@@ -157,13 +157,13 @@ class PlayerBar: UIToolbar {
         }
         
         guard let url else {
-            faviconImageView.image = UIImage(systemName: "radio")
+            faviconImageView.image = UIImage(systemName: "music.note.house")
             fixFaviconVerticalOffset()
             return
         }
         
         faviconImageView.kf.setImage(with: url,
-                                     placeholder: UIImage(systemName: "radio")?.imageWithoutBaseline(),
+                                     placeholder: UIImage(systemName: "music.note.house")?.imageWithoutBaseline(),
                                      options: [ .transition(.fade(0.3)) ]) {
             switch $0 {
             case .success:

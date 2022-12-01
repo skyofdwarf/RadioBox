@@ -30,7 +30,7 @@ class HomeViewController: UIViewController {
         title = "Most voted"
         
         tabBarItem = UITabBarItem(title: "Home",
-                                  image: UIImage(systemName: "dot.radiowaves.left.and.right"),
+                                  image: UIImage(systemName: "radio"),
                                   tag: 0)
     }
     

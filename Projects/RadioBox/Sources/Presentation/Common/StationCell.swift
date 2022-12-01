@@ -84,7 +84,7 @@ class StationCell: UICollectionViewCell {
         
         task?.cancel()
         task = imageView.kf.setImage(with: url,
-                                     placeholder: UIImage(systemName: "radio"),
+                                     placeholder: UIImage(systemName: "music.note.house"),
                                      options: [ .transition(.fade(0.3)) ])
         
         

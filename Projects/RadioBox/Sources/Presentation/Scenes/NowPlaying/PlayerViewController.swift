@@ -249,7 +249,7 @@ class PlayerViewController: UIViewController {
         vm.player.streamArtwork
             .sink { [weak self] url in
                 self?.imageView.kf.setImage(with: url,
-                                           placeholder: UIImage(systemName: "radio.fill"),
+                                           placeholder: UIImage(systemName: "music.note.house"),
                                            options: [ .transition(.fade(0.3)) ])
             }.store(in: &cbag)
         
