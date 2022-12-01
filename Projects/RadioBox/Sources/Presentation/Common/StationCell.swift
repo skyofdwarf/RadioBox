@@ -36,7 +36,7 @@ class StationCell: UICollectionViewCell {
     func setup() {
         infoLabel.numberOfLines = 1
         infoLabel.textAlignment = .center
-        infoLabel.textColor = UIColor.label
+        infoLabel.textColor = .secondaryLabel
         infoLabel.font = UIFont.preferredFont(forTextStyle: .caption2)
         infoLabel.adjustsFontForContentSizeCategory = true
         
@@ -59,16 +59,16 @@ class StationCell: UICollectionViewCell {
             imageViewContainer.subviews {
                 imageView
             }
-            infoLabel
             nameLabel
+            infoLabel
         }
         
         layout {
             0
             |imageViewContainer|
-            |infoLabel|
-            4
-            |-4-nameLabel-4-|
+            |nameLabel|
+            2
+            |-4-infoLabel-4-|
             >=0
         }
         
@@ -88,7 +88,9 @@ class StationCell: UICollectionViewCell {
                                      options: [ .transition(.fade(0.3)) ])
         
         
-        infoLabel.text = "\(station.codec) / \(station.bitrate)"
         nameLabel.text = station.name
+        infoLabel.text = [station.codec, String(station.bitrate), station.country]
+            .filter { !$0.trimmingCharacters(in: CharacterSet.whitespaces).isEmpty }
+            .joined(separator: " / ")
     }
 }

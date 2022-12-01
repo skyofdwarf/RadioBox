@@ -52,6 +52,7 @@ class SearchViewController: UIViewController {
     func configureSubviews() {
         label.text = "Search stations by name"
         label.textAlignment = .center
+        label.textColor = .secondaryLabel
         indicatorView.color = .red
         indicatorView.hidesWhenStopped = true
         
@@ -77,12 +78,13 @@ class SearchViewController: UIViewController {
         }
         
         view.layout {
-            |-indicatorView-|
             |-label-|
+            6
+            |-indicatorView-|
         }
         
         cv.fillContainer()
-        indicatorView.centerInContainer()
+        label.centerInContainer()
     }
     
     func bindViewModel() {

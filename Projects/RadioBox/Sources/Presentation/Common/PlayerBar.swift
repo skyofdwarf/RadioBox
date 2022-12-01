@@ -55,7 +55,7 @@ class PlayerBar: UIToolbar {
         }
         artistLabel = UILabel().then {
             $0.font = UIFont.preferredFont(forTextStyle: .callout)
-            $0.textColor = .label
+            $0.textColor = .secondaryLabel
             $0.lineBreakMode = .byTruncatingTail
         }
         
