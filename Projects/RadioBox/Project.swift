@@ -24,6 +24,7 @@ import MyPlugin
 let localHelper = LocalHelper(name: "MyPlugin")
 
 let name = "RadioBox"
+let appVersion = "1.0.0"
 let organization =  "dwarfini"
 let bundleIdPrefix = "com.dwarfini"
 
@@ -37,9 +38,28 @@ let dependencies: [TargetDependency] = [
     .package(product: "RDXVM"),
 ]
 
+let scripts: [TargetScript] = [
+    .pre(script: """
+#!/usr/bin/env bash
+
+epoch=`date +'%s'`
+app_version=\(appVersion)
+#app_version=`sed -n -E '/CFBundleShortVersionString/{n;s/.*<string>(.*)<\\/string>.*$/\\1/p;}' ${PROJECT_DIR}/${INFOPLIST_FILE}`
+
+echo info plist: ${PROJECT_DIR}/${INFOPLIST_FILE}
+echo epoch: $epoch
+echo app version: $app_version
+
+sed -i -n -E "/CFBundleVersion/{n;s/<string>(.*)<\\/string>/<string>$app_version.$epoch<\\/string>/;}" ${PROJECT_DIR}/${INFOPLIST_FILE}
+""",
+        name: "Update Bundle Version")
+]
+
 let targets = Project.makeAppTargets(name: name,
+                                     appVersion: .string(appVersion),
                                      bundleIdPredix: bundleIdPrefix,
                                      platform: .iOS,
+                                     scripts: scripts,
                                      dependencies: dependencies)
 let project = Project(name: name,
                       organizationName: organization,

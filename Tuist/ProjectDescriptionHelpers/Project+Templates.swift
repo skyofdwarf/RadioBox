@@ -1,4 +1,5 @@
 import ProjectDescription
+import Foundation
 
 /// Project helpers are functions that simplify the way you define your project.
 /// Share code to create targets, settings, dependencies,
@@ -30,11 +31,11 @@ extension Project {
     }
 
     /// Helper function to create the application target and the unit test target.
-    public static func makeAppTargets(name: String, bundleIdPredix: String, platform: Platform, scripts: [TargetScript] = [], dependencies: [TargetDependency]) -> [Target] {
+    public static func makeAppTargets(name: String, appVersion: InfoPlist.Value, bundleIdPredix: String, platform: Platform, scripts: [TargetScript] = [], dependencies: [TargetDependency]) -> [Target] {
         let platform: Platform = platform
         let infoPlist: [String: InfoPlist.Value] = [
-            "CFBundleShortVersionString": "1.0",
-            "CFBundleVersion": "1",
+            "CFBundleShortVersionString": appVersion,
+            "CFBundleVersion": appVersion,
             "UIMainStoryboardFile": "",
             "UILaunchStoryboardName": "LaunchScreen",
             "NSAppTransportSecurity": .dictionary(["NSAllowsArbitraryLoads": .boolean(true)]),
