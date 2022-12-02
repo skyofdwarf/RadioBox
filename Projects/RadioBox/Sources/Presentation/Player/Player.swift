@@ -34,6 +34,7 @@ protocol Player: AnyObject {
     var streamArtwork: AnyPublisher<URL?, Never> { get }
     
     func play(station: RadioStation)
+    func resume()
     func stop()
     
     @discardableResult

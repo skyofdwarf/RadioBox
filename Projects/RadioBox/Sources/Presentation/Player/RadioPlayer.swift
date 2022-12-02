@@ -122,6 +122,12 @@ class RadioPlayer: NSObject, Player {
         parseStreamUrl(station.favicon)
     }
     
+    func resume() {
+        if !isPlaying {
+            player.play()
+        }
+    }
+    
     func stop() {
         player.pause()
         

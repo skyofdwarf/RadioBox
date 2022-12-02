@@ -20,6 +20,8 @@ extension UIApplication {
         configureAudioSession()
         configureRemoteCommandCenter()
         
+        registerAudioIterruptionNotification()
+        
         return UIApplication.coordinator.start()
     }
     
@@ -40,6 +42,28 @@ extension UIApplication {
         
         center.pauseCommand.addTarget { _ in
             Self.player.toggle() ? .success : .commandFailed
+        }
+    }
+    
+    func registerAudioIterruptionNotification() {
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(handleAudioInterruptionNotification(_:)),
+                                               name: AVAudioSession.interruptionNotification,
+                                               object: nil)
+    }
+    
+    @objc func handleAudioInterruptionNotification(_ notification: NSNotification) {
+        guard let userInfo = notification.userInfo,
+              let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+              let type = AVAudioSession.InterruptionType(rawValue: typeValue) else {
+            return
+        }
+
+        switch type {
+        case .ended:
+            // Don't need to check AVAudioSession.InterruptionOptions.shouldResume
+            Self.player.resume()
+        default: break
         }
     }
 }
