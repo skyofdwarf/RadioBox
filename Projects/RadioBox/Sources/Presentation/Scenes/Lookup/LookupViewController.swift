@@ -39,6 +39,7 @@ class LookupViewController: UIViewController {
     
     func configureSubviews() {
         radioImageView.contentMode = .scaleAspectFit
+        radioImageView.tintColor = UIColor(white: 0.2, alpha: 1) //< #262626
         indicatorView.color = .red
         indicatorView.hidesWhenStopped = true
         
