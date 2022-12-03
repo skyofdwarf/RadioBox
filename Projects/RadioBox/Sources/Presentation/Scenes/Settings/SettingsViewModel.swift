@@ -76,12 +76,11 @@ final class SettingsViewModel: CoordinatingViewModel<SettingsAction, SettingsMut
                 return defualtHtml
             }
             
-            guard let range = html.range(of: "${APP_VERSION}"),
-                  let dictionary = Bundle.main.infoDictionary,
-                  let version = dictionary["CFBundleShortVersionString"] as? String
-            else {
+            guard let range = html.range(of: "${APP_VERSION}") else {
                 return html
             }
+            
+            let version = UIApplication.shared.version
             
             return html.replacingCharacters(in: range, with: "\(version)")
         }

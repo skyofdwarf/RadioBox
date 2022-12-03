@@ -11,7 +11,7 @@ import RadioBrowser
 import Moya
 
 final class RadioService: RadioBrowser {
-    init(baseURL: URL, userAgent: String = "RadioBox/0.1.0", stubClosure: @escaping MoyaProvider<MultiTarget>.StubClosure = MoyaProvider.neverStub) {
+    init(baseURL: URL, stubClosure: @escaping MoyaProvider<MultiTarget>.StubClosure = MoyaProvider.neverStub) {
 #if DEBUG
         let plugins: [PluginType] = [
             NetworkLoggerPlugin(configuration: .init(logOptions: .verbose)),
@@ -24,19 +24,7 @@ final class RadioService: RadioBrowser {
         ]
 #endif
         
-        let endpointClosure = { (target: MultiTarget) -> Endpoint in
-            let url = (target.path.isEmpty ? baseURL: baseURL.appendingPathComponent(target.path))
-            
-            return Endpoint(url: url.absoluteString,
-                            sampleResponseClosure: { .networkResponse(200, target.sampleData) },
-                            method: target.method,
-                            task: target.task,
-                            httpHeaderFields: target.headers)
-            .adding(newHTTPHeaderFields: ["User-Agent": userAgent])
-        }
-        
-        let provider = MoyaProvider<MultiTarget>(endpointClosure: endpointClosure,
-                                                 stubClosure: stubClosure,
+        let provider = MoyaProvider<MultiTarget>(stubClosure: stubClosure,
                                                  plugins: plugins)
         
         super.init(provider: provider)

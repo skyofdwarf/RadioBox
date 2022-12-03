@@ -16,6 +16,8 @@ extension UIApplication {
     static let coordinator = AppCoordinator()
     static let model = AppModel(coordinator: coordinator, player: player)
     
+    var version: String { Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0" }
+    
     func start() -> UIWindow {
         configureAudioSession()
         configureRemoteCommandCenter()
