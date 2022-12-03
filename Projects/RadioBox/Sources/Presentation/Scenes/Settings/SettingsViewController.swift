@@ -91,4 +91,8 @@ extension SettingsViewController: WKNavigationDelegate {
         
         decisionHandler(allows ? .allow: .cancel, preferences)
     }
+    
+    func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        webView.reload()
+    }
 }
