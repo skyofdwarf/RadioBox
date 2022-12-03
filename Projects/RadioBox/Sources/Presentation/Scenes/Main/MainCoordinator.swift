@@ -9,17 +9,38 @@
 import UIKit
 import RxCocoa
 
-final class MainCoordinator {
-    static func start(window: UIWindow, serverURL: URL, player: Player) {
+final class MainCoordinator: Coordinator {
+    enum Location {
+        case home(String)
+    }
+    
+    private(set) weak var target: MainViewController?
+    
+    let window: UIWindow
+    let serverURL: URL
+    let player: Player
+    
+    init(window: UIWindow, serverURL: URL, player: Player) {
+        self.window = window
+        self.serverURL = serverURL
+        self.player = player
+    }
+    
+    func instantiateTarget() -> MainViewController {
         let service = RadioService(baseURL: serverURL)
         
-        let vc = MainViewController().then {
+        return MainViewController(coordinator: self).then {
             $0.viewControllers = [ HomeCoordinator(service: service, player: player).start(),
                                    SearchCoordinator(service: service, player: player).start(),
                                    SettingsCoordinator(service: service, player: player).start(),
             ].map { $0.navigationRooted }
         }
-
-        window.rootViewController = vc
+    }
+    
+    @discardableResult
+    func start() -> MainViewController {
+        instantiateTarget().then {
+            window.rootViewController = $0
+        }
     }
 }

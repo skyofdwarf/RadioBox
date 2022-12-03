@@ -47,7 +47,7 @@ final class LookupCoordinator: Coordinator {
         switch location {
         case .home(let hostname):
             if let url = URL(string: "https://\(hostname)") {
-                MainCoordinator.start(window: window, serverURL: url, player: player)
+                MainCoordinator(window: window, serverURL: url, player: player).start()
             }
         }
     }
