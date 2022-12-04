@@ -103,6 +103,8 @@ extension SearchViewModel {
         return Observable<Reaction>.create { [weak self] observer in
             let options: [SearchStationOptions] = [.name(keyword),
                                                    .offset(offset),
+                                                   .order(.votes),
+                                                   .hidebroken(true),
                                                    .limit(limit) ]
             self?.service.request(RadioBrowserTarget.searchStation(options), success: { (stationDTOs: [RadioBrowserStation]) in
                 let hasNextPage = stationDTOs.count >= Constant.PageLimit

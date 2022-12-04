@@ -15,8 +15,12 @@ public enum SearchStationOptions {
     case offset(Int)
     case limit(Int)
     case isHttps(Bool)
-    case order(String)
+    case order(Order)
     case hidebroken(Bool)
+    
+    public enum Order: String {
+        case name, url, homepage, favicon, tags, country, state, language, votes, codec, bitrate, lastcheckok, lastchecktime, clicktimestamp, clickcount, clicktrend, changetimestamp, random
+    }
     
     var parameter: [String: Encodable] {
         switch self {
@@ -33,7 +37,7 @@ public enum SearchStationOptions {
         case .isHttps(let isHttps):
             return ["is_https": isHttps]
         case .order(let order):
-            return ["order": order]
+            return ["order": order.rawValue]
         case .hidebroken(let hidebroken):
             return ["hidebroken": hidebroken]
         }
