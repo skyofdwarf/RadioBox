@@ -52,7 +52,9 @@ echo app version: $app_version
 
 sed -i -n -E "/CFBundleVersion/{n;s/<string>(.*)<\\/string>/<string>$app_version.$epoch<\\/string>/;}" ${PROJECT_DIR}/${INFOPLIST_FILE}
 """,
-        name: "Update Bundle Version")
+         name: "Update Bundle Version",
+         basedOnDependencyAnalysis: false
+        )
 ]
 
 let targets = Project.makeAppTargets(name: name,
