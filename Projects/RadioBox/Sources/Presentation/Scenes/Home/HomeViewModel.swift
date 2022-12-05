@@ -77,7 +77,10 @@ final class HomeViewModel: CoordinatingViewModel<HomeAction, HomeMutation, HomeE
             if reset {
                 state.stations = stations
             } else {
-                state.stations += stations
+                let orderedSet = NSMutableOrderedSet(array: state.stations)
+                orderedSet.addObjects(from: stations)
+                
+                state.stations = orderedSet.array as! [RadioStation]
             }
         case .page(let page):
             state.page = page
