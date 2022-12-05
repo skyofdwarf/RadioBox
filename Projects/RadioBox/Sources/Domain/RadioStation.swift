@@ -10,6 +10,7 @@ import Foundation
 import RadioBrowser
 
 struct RadioStation {
+    let changeuuid: String
     let stationuuid: String
     let name: String
     let url: String
@@ -19,12 +20,11 @@ struct RadioStation {
     let tags: String
     let country: String
     let countrycode: String
+    let state: String
     let language: String
-    let votes: Int
+    let languagecodes: String
     let codec: String
     let bitrate: Int
-    let clickcount: Int
-    let clicktrend: Int
 }
 
 extension RadioStation: Hashable {
@@ -39,6 +39,7 @@ extension RadioStation: Hashable {
 
 extension RadioStation {
     init(_ station: RadioBrowserStation) {
+        self.changeuuid = station.changeuuid
         self.stationuuid = station.stationuuid
         self.name = station.name
         self.url = station.url
@@ -48,11 +49,10 @@ extension RadioStation {
         self.tags = station.tags
         self.country = station.country
         self.countrycode = station.countrycode
+        self.state = station.state
         self.language = station.language
-        self.votes = station.votes
+        self.languagecodes = station.languagecodes
         self.codec = station.codec
         self.bitrate = station.bitrate
-        self.clickcount = station.clickcount
-        self.clicktrend = station.clicktrend
     }
 }
