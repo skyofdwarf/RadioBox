@@ -15,7 +15,11 @@ class StationCell: UICollectionViewCell {
     let infoLabel = UILabel()
     let nameLabel = UILabel()
     
-    var task: DownloadTask?
+    let favoriteButton = UIButton(type: .custom)
+    
+    var toggleFavorites: ((Bool) -> Void)?
+    
+    private var task: DownloadTask?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -28,6 +32,8 @@ class StationCell: UICollectionViewCell {
     
     override func prepareForReuse() {
         super.prepareForReuse()
+        
+        toggleFavorites = nil
         
         task?.cancel()
         task = nil
@@ -49,6 +55,11 @@ class StationCell: UICollectionViewCell {
         imageView.clipsToBounds = true
         imageView.contentMode = .scaleAspectFit
         imageView.tintColor = .secondaryLabel
+        
+        favoriteButton.addTarget(self, action: #selector(favoriteButtonDidTap(_:)), for: .touchUpInside)
+        favoriteButton.setImage(UIImage(systemName: "star"), for: .normal)
+        favoriteButton.setImage(UIImage(systemName: "star.fill"), for: .selected)
+        favoriteButton.tintColor = .systemRed
                 
         let imageViewContainer = UIView()
         imageViewContainer.backgroundColor = .systemGroupedBackground
@@ -61,6 +72,7 @@ class StationCell: UICollectionViewCell {
             }
             nameLabel
             infoLabel
+            favoriteButton
         }
         
         layout {
@@ -72,11 +84,17 @@ class StationCell: UICollectionViewCell {
             >=0
         }
         
+        favoriteButton.top(0).right(0).size(48)
+        
         imageViewContainer.heightEqualsWidth()
         imageView.fillContainer()
         
         infoLabel.height(12)
         nameLabel.height(>=14)
+    }
+    
+    @objc func favoriteButtonDidTap(_ sender: UIButton) {
+        toggleFavorites?(!sender.isSelected)
     }
     
     func configure(station: RadioStation) {
@@ -92,5 +110,7 @@ class StationCell: UICollectionViewCell {
         infoLabel.text = [station.codec, String(station.bitrate), station.country]
             .filter { !$0.trimmingCharacters(in: CharacterSet.whitespaces).isEmpty }
             .joined(separator: " / ")
+        
+        favoriteButton.isSelected = station.favorited
     }
 }

@@ -19,18 +19,20 @@ final class MainCoordinator: Coordinator {
     let window: UIWindow
     let serverURL: URL
     let player: Player
+    let favoritesService: FavoritesService
     
-    init(window: UIWindow, serverURL: URL, player: Player) {
+    init(window: UIWindow, serverURL: URL, player: Player, favoritesService: FavoritesService) {
         self.window = window
         self.serverURL = serverURL
         self.player = player
+        self.favoritesService = favoritesService
     }
     
     func instantiateTarget() -> MainViewController {
         let service = RadioService(baseURL: serverURL)
         
         return MainViewController(coordinator: self).then {
-            $0.viewControllers = [ HomeCoordinator(service: service, player: player).start(),
+            $0.viewControllers = [ HomeCoordinator(service: service, favoritesService: favoritesService, player: player).start(),
                                    SearchCoordinator(service: service, player: player).start(),
                                    SettingsCoordinator(service: service, player: player).start(),
             ].map { $0.navigationRooted }

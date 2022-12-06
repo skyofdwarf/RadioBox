@@ -15,6 +15,7 @@ final class LookupCoordinator: Coordinator {
     
     let window: UIWindow
     let player: Player
+    let favoritesService: FavoritesService
     
     private(set) weak var target: LookupViewController?
 
@@ -22,9 +23,10 @@ final class LookupCoordinator: Coordinator {
         print("\(#file).\(#function)")
     }
     
-    init(window: UIWindow, player: Player) {
+    init(window: UIWindow, player: Player, favoritesService: FavoritesService) {
         self.window = window
         self.player = player
+        self.favoritesService = favoritesService
     }
     
     func instantiateTarget() -> LookupViewController {
@@ -47,7 +49,7 @@ final class LookupCoordinator: Coordinator {
         switch location {
         case .home(let hostname):
             if let url = URL(string: "https://\(hostname)") {
-                MainCoordinator(window: window, serverURL: url, player: player).start()
+                MainCoordinator(window: window, serverURL: url, player: player, favoritesService: favoritesService).start()
             }
         }
     }

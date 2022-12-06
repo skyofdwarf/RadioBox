@@ -82,10 +82,9 @@ class HomeViewController: UIViewController {
         
         vm.state.$stations
             .asObservable()
-            .withUnretained(self)
-            .bind(onNext: { vc, stations in
-                vc.applyDataSource(stations: stations)
-            })
+            .bind(with: self) { this, stations in
+                this.applyDataSource(stations: stations)
+            }
             .disposed(by: dbag)
     }
 }
@@ -111,6 +110,9 @@ extension HomeViewController {
         let stationCellRegistration = UICollectionView.CellRegistration<StationCell, RadioStation>
         { (cell, indexPath, station) in
             cell.configure(station: station)
+            cell.toggleFavorites = { [weak self] _ in
+                self?.vm.send(action: .toggleFavorites(station))
+            }
         }
         
         return UICollectionViewDiffableDataSource(collectionView: cv)
@@ -144,7 +146,7 @@ extension HomeViewController {
         snapshot.appendItems(stations, toSection: .mostVoted)
         
         dataSource.apply(snapshot, animatingDifferences: false)
-    }
+    }    
 }
 
 // MARK: - CollectionView layouts

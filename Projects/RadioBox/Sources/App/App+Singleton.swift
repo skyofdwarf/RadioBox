@@ -15,6 +15,7 @@ extension UIApplication {
     
     static let coordinator = AppCoordinator()
     static let model = AppModel(coordinator: coordinator, player: player)
+    static let favoritesService = FavoritesService()
     
     var version: String { Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0" }
     

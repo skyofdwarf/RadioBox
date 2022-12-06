@@ -16,19 +16,21 @@ final class HomeCoordinator: Coordinator {
     }
     
     let service: RadioService
+    let favoritesService: FavoritesService
     let player: Player
     
     private(set) weak var target: HomeViewController?
     
-    init(service: RadioService, player: Player) {
+    init(service: RadioService, favoritesService: FavoritesService, player: Player) {
         self.service = service
+        self.favoritesService = favoritesService
         self.player = player
     }
     
     func instantiateTarget() -> HomeViewController {
         HomeViewController().then {
             self.target = $0
-            $0.vm = HomeViewModel(service: service, coordinator: self, player: player)
+            $0.vm = HomeViewModel(service: service, favoritesService: favoritesService, coordinator: self, player: player)
         }
     }
     

@@ -17,6 +17,7 @@ import Moya
 enum HomeAction {
     case ready
     case tryFetchNextPage
+    case toggleFavorites(RadioStation)
 }
 
 enum HomeMutation {
@@ -24,6 +25,7 @@ enum HomeMutation {
     case stations([RadioStation], reset: Bool)
     case page(Int)
     case hasNextPage(Bool)
+    case updateStation(RadioStation)
 }
 
 enum HomeEvent {
@@ -49,10 +51,12 @@ struct HomeState {
 
 final class HomeViewModel: CoordinatingViewModel<HomeAction, HomeMutation, HomeEvent, HomeState> {
     let service: RadioService
+    let favoritesService: FavoritesService
     let player: Player
         
-    init<C: Coordinator>(service: RadioService, coordinator: C, player: Player) where C.Location == Event.Location {
+    init<C: Coordinator>(service: RadioService, favoritesService: FavoritesService, coordinator: C, player: Player) where C.Location == Event.Location {
         self.service = service
+        self.favoritesService = favoritesService
         self.player = player
         
         super.init(coordinator: coordinator,
@@ -66,6 +70,8 @@ final class HomeViewModel: CoordinatingViewModel<HomeAction, HomeMutation, HomeE
             return fetchPage(0)
         case .tryFetchNextPage:
             return fetchPage(state.page + 1)
+        case .toggleFavorites(let station):
+            return toggleFavorites(station)
         }
     }
         
@@ -86,6 +92,13 @@ final class HomeViewModel: CoordinatingViewModel<HomeAction, HomeMutation, HomeE
             state.page = page
         case .hasNextPage(let hasNextPage):
             state.hasNextPage = hasNextPage
+        case .updateStation(let station):
+            for i in 0..<state.stations.count {
+                if state.stations[i].stationuuid == station.stationuuid {
+                    state.stations[i] = station
+                    break
+                }
+            }
         }
     }
 }
@@ -103,9 +116,26 @@ extension HomeViewModel {
         let offset = page * limit
         
         return Observable<Reaction>.create { [weak self] observer in
-            self?.service.request(RadioBrowserTarget.mostVotedStations(offset: offset, limit: limit), success: { (stationDTOs: [RadioBrowserStation]) in
+            guard let self else {
+                observer.onCompleted()
+                return Disposables.create()
+            }
+            
+            self.service.request(RadioBrowserTarget.mostVotedStations(offset: offset, limit: limit), success: { [weak self] (stationDTOs: [RadioBrowserStation]) in
+                guard let self else {
+                    observer.onCompleted()
+                    return
+                }
+                
                 let hasNextPage = stationDTOs.count >= Constant.PageLimit
-                let stations = stationDTOs.map(RadioStation.init(_:))
+                var stations = stationDTOs.map(RadioStation.init(_:))
+                let uuids = stations.map(\.stationuuid)
+                let favorites = self.favoritesService.filterContained(uuids)
+                
+                for i in 0..<stations.count {
+                    stations[i].favorited = favorites.contains(stations[i].stationuuid)
+                }
+                
                 observer.onNext(.mutation(.page(page)))
                 observer.onNext(.mutation(.hasNextPage(hasNextPage)))
                 observer.onNext(.mutation(.stations(stations, reset: offset == 0)))
@@ -116,6 +146,43 @@ extension HomeViewModel {
             })
             return Disposables.create()
         }
+        .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .userInitiated))
+        .observe(on: MainScheduler.instance)
+        .startWith(.mutation(.fetching(true)))
+        .concat(Observable<Reaction>.just(.mutation(.fetching(false))))
+    }
+    
+    func toggleFavorites(_ station: RadioStation) -> Observable<Reaction> {
+        guard favoritesService.available, !state.fetching else {
+            return .empty()
+        }
+        return Observable<Reaction>.create { [weak self] observer in
+            guard let self else {
+                observer.onCompleted()
+                return Disposables.create()
+            }
+            
+            var success = false
+            var station = station
+            
+            station.favorited = !station.favorited
+            
+            if station.favorited {
+                success = self.favoritesService.add(station)
+            } else {
+                success = self.favoritesService.remove(station)
+            }
+            
+            if success {
+                observer.onNext(.mutation(.updateStation(station)))
+            }
+            
+            observer.onCompleted()
+            
+            return Disposables.create()
+        }
+        .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .userInitiated))
+        .observe(on: MainScheduler.instance)
         .startWith(.mutation(.fetching(true)))
         .concat(Observable<Reaction>.just(.mutation(.fetching(false))))
     }
