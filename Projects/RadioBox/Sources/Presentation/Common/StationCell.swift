@@ -55,11 +55,20 @@ class StationCell: UICollectionViewCell {
         imageView.clipsToBounds = true
         imageView.contentMode = .scaleAspectFit
         imageView.tintColor = .secondaryLabel
+
+        let symbolConfiguration = UIImage.SymbolConfiguration(textStyle: .headline, scale: .large)
         
         favoriteButton.addTarget(self, action: #selector(favoriteButtonDidTap(_:)), for: .touchUpInside)
-        favoriteButton.setImage(UIImage(systemName: "star"), for: .normal)
-        favoriteButton.setImage(UIImage(systemName: "star.fill"), for: .selected)
+        favoriteButton.setPreferredSymbolConfiguration(symbolConfiguration, forImageIn: .normal)
+        favoriteButton.setPreferredSymbolConfiguration(symbolConfiguration, forImageIn: .selected)
+        favoriteButton.setImage(UIImage(systemName: "bookmark"), for: .normal)
+        favoriteButton.setImage(UIImage(systemName: "bookmark.fill"), for: .selected)
         favoriteButton.tintColor = .systemRed
+        favoriteButton.backgroundColor = .systemRed.withAlphaComponent(0.2)
+        favoriteButton.layer.cornerRadius = 38/2
+        favoriteButton.layer.borderColor = UIColor.systemRed.cgColor
+        favoriteButton.layer.borderWidth = 2
+        
                 
         let imageViewContainer = UIView()
         imageViewContainer.backgroundColor = .systemGroupedBackground
@@ -84,7 +93,7 @@ class StationCell: UICollectionViewCell {
             >=0
         }
         
-        favoriteButton.top(0).right(0).size(48)
+        favoriteButton.top(10).right(10).size(38)
         
         imageViewContainer.heightEqualsWidth()
         imageView.fillContainer()

@@ -29,7 +29,7 @@ class FavoritesViewController: UIViewController {
         super.init(nibName: nil, bundle: nil)
         
         tabBarItem = UITabBarItem(title: "Favorites",
-                                  image: UIImage(systemName: "star.circle"),
+                                  image: UIImage(systemName: "bookmark.circle"),
                                   tag: 0)
     }
     
