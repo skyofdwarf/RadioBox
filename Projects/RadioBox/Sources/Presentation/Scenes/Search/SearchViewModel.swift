@@ -14,6 +14,7 @@ import RxSwift
 enum SearchAction {
     case search(String)
     case trySearchNextPage
+    case toggleFavorites(RadioStation)
 }
 
 enum SearchMutation {
@@ -23,6 +24,7 @@ enum SearchMutation {
     case keyword(String?)
     case page(Int)
     case hasNextPage(Bool)
+    case updateStation(RadioStation)
 }
 
 enum SearchEvent {
@@ -50,10 +52,12 @@ struct SearchState {
 
 final class SearchViewModel: CoordinatingViewModel<SearchAction, SearchMutation, SearchEvent, SearchState> {
     let service: RadioService
+    let favoritesService: FavoritesService
     let player: Player
     
-    init<C: Coordinator>(service: RadioService, coordinator: C, player: Player) where C.Location == Event.Location {
+    init<C: Coordinator>(service: RadioService, favoritesService: FavoritesService, coordinator: C, player: Player) where C.Location == Event.Location {
         self.service = service
+        self.favoritesService = favoritesService
         self.player = player
         
         super.init(coordinator: coordinator, state: State())
@@ -65,6 +69,8 @@ final class SearchViewModel: CoordinatingViewModel<SearchAction, SearchMutation,
             return searchKeyword(keyword, page: 0)
         case .trySearchNextPage:
             return searchKeyword(state.keyword, page: state.page + 1)
+        case .toggleFavorites(let station):
+            return toggleFavorites(station)
         }
     }
     
@@ -87,7 +93,27 @@ final class SearchViewModel: CoordinatingViewModel<SearchAction, SearchMutation,
             state.hasNextPage = hasNextPage
         case .keyword(let keyword):
             state.keyword = keyword
+        case .updateStation(let station):
+            for i in 0..<state.stations.count {
+                if state.stations[i].stationuuid == station.stationuuid {
+                    state.stations[i] = station
+                    break
+                }
+            }
         }
+    }
+    
+    override func transform(mutation: Observable<SearchMutation>) -> Observable<SearchMutation> {
+        let changes = favoritesService.changes
+            .asObservable()
+            .flatMap({ changes -> Observable<SearchMutation> in
+                switch changes {
+                case .added(let station), .removed(let station):
+                    return .just(.updateStation(station))
+                }
+            })
+        
+        return .merge(mutation, changes)
     }
 }
 
@@ -104,15 +130,31 @@ extension SearchViewModel {
         let offset = page * limit
         
         return Observable<Reaction>.create { [weak self] observer in
+            guard let self else {
+                observer.onCompleted()
+                return Disposables.create()
+            }
+            
             let options: [SearchStationOptions] = [.name(keyword),
                                                    .offset(offset),
                                                    .order(.votes),
                                                    .hidebroken(true),
                                                    .limit(limit) ]
-            self?.service.request(RadioBrowserTarget.searchStation(options), success: { (stationDTOs: [RadioBrowserStation]) in
+            self.service.request(RadioBrowserTarget.searchStation(options), success: { [weak self] (stationDTOs: [RadioBrowserStation]) in
+                guard let self else {
+                    observer.onCompleted()
+                    return
+                }
+                
                 let hasNextPage = stationDTOs.count >= Constant.PageLimit
-                let stations = stationDTOs.map(RadioStation.init(_:))
+                var stations = stationDTOs.map(RadioStation.init(_:))
                 let scrollToTop = !stations.isEmpty && page == 0
+                let uuids = stations.map(\.stationuuid)
+                let favorites = self.favoritesService.filterContained(uuids)
+                
+                for i in 0..<stations.count {
+                    stations[i].favorited = favorites.contains(stations[i].stationuuid)
+                }
                 
                 observer.onNext(.mutation(.stations(stations, reset: offset == 0)))
                 observer.onNext(.mutation(.page(page)))
@@ -129,6 +171,41 @@ extension SearchViewModel {
             return Disposables.create()
         }
         .startWith(.mutation(.fetching(true)), .mutation(.keyword(keyword)))
+        .concat(Observable<Reaction>.just(.mutation(.fetching(false))))
+    }
+    
+    func toggleFavorites(_ station: RadioStation) -> Observable<Reaction> {
+        guard favoritesService.available, !state.fetching else {
+            return .empty()
+        }
+        return Observable<Reaction>.create { [weak self] observer in
+            guard let self else {
+                observer.onCompleted()
+                return Disposables.create()
+            }
+            
+            var success = false
+            var station = station
+            
+            station.favorited = !station.favorited
+            
+            if station.favorited {
+                success = self.favoritesService.add(station)
+            } else {
+                success = self.favoritesService.remove(station)
+            }
+            
+            if success {
+                observer.onNext(.mutation(.updateStation(station)))
+            }
+            
+            observer.onCompleted()
+            
+            return Disposables.create()
+        }
+        .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .userInitiated))
+        .observe(on: MainScheduler.instance)
+        .startWith(.mutation(.fetching(true)))
         .concat(Observable<Reaction>.just(.mutation(.fetching(false))))
     }
 }

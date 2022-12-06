@@ -17,18 +17,20 @@ final class SearchCoordinator: Coordinator {
     
     let service: RadioService
     let player: Player
+    let favoritesService: FavoritesService
     
     private(set) weak var target: SearchViewController?
     
-    init(service: RadioService, player: Player) {
+    init(service: RadioService, favoritesService: FavoritesService, player: Player) {
         self.service = service
+        self.favoritesService = favoritesService
         self.player = player
     }
     
     func instantiateTarget() -> SearchViewController {
         SearchViewController().then {
             self.target = $0
-            $0.vm = SearchViewModel(service: service, coordinator: self, player: player)
+            $0.vm = SearchViewModel(service: service, favoritesService: favoritesService, coordinator: self, player: player)
         }
     }
     
