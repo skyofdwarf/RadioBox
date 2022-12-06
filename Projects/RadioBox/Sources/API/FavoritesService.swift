@@ -10,15 +10,24 @@ import Foundation
 import SQLite3
 import RxSwift
 import RxRelay
+import RxCocoa
 
 fileprivate let defaultDatabaseName = "favorites.db"
 fileprivate let defaultTableName = "favorites"
 
 final class FavoritesService {
+    enum Changes {
+        case added(RadioStation)
+        case removed(RadioStation)
+    }
+    
     let tableName: String
     let databaseName: String
     
     private(set) var available: Bool = false
+    
+    private let changesRelay = PublishRelay<Changes>()
+    var changes: Signal<Changes> { changesRelay.asSignal() }
     
     var path: String? {
         try? FileManager.default.url(for: .documentDirectory,
@@ -109,10 +118,10 @@ final class FavoritesService {
         return result
     }
     
-    func fetch(offset: Int, limit: Int) -> [RadioStation] {
+    func fetch(paging: (offset: Int, limit: Int)? = nil) -> [RadioStation] {
         guard available else { return [] }
         
-        let sql = """
+        var sql = """
         SELECT
         changeuuid,
         stationuuid,
@@ -129,8 +138,14 @@ final class FavoritesService {
         languagecodes,
         codec,
         bitrate
-        FROM \(tableName) ORDER BY favorited_epoch LIMIT \(limit) OFFSET \(offset);
+        FROM \(tableName) ORDER BY favorited_epoch
         """
+        
+        if let paging {
+            sql += " LIMIT \(paging.limit) OFFSET \(paging.offset);"
+        } else {
+            sql += ";"
+        }
 
         var statement: OpaquePointer?
         let result = sqlite3_prepare_v2(database, sql, -1, &statement, nil)
@@ -163,7 +178,8 @@ final class FavoritesService {
                                        language: stringFrom(column: 11),
                                        languagecodes: stringFrom(column: 12),
                                        codec: stringFrom(column: 13),
-                                       bitrate: Int(sqlite3_column_int(statement, 14)))
+                                       bitrate: Int(sqlite3_column_int(statement, 14)),
+                                       favorited: true)
             stations.append(station)
         }
         
@@ -171,9 +187,9 @@ final class FavoritesService {
     }
     
     
-    func fetch(offset: Int, limit: Int, completion: @escaping ([RadioStation]) -> Void) {
+    func fetch(paging: (offset: Int, limit: Int)? = nil, completion: @escaping ([RadioStation]) -> Void) {
         DispatchQueue.global(qos: .userInitiated).async { [self] in
-            completion(fetch(offset: offset, limit: limit))
+            completion(fetch(paging: paging))
         }
     }
     
@@ -219,7 +235,12 @@ final class FavoritesService {
         );
         """
         
-        return run(sql: sql) == SQLITE_DONE
+        if run(sql: sql) == SQLITE_DONE {
+            changesRelay.accept(.added(station))
+            return true
+        }
+        
+        return false
     }
     
     func add( station: RadioStation, completion: @escaping (Bool) -> Void) {
@@ -233,7 +254,11 @@ final class FavoritesService {
         
         let sql = "DELETE FROM \(tableName) WHERE stationuuid = '\(station.stationuuid)';"
         
-        return run(sql: sql) == SQLITE_DONE
+        if run(sql: sql) == SQLITE_DONE {
+            changesRelay.accept(.removed(station))
+            return true
+        }
+        return false
     }
     
     func remove(_ station: RadioStation, completion: @escaping (Bool) -> Void) {

@@ -101,6 +101,19 @@ final class HomeViewModel: CoordinatingViewModel<HomeAction, HomeMutation, HomeE
             }
         }
     }
+    
+    override func transform(mutation: Observable<HomeMutation>) -> Observable<HomeMutation> {
+        let changes = favoritesService.changes
+            .asObservable()
+            .flatMap({ changes -> Observable<HomeMutation> in
+                switch changes {
+                case .added(let station), .removed(let station):
+                    return .just(.updateStation(station))
+                }
+            })
+        
+        return .merge(mutation, changes)
+    }
 }
 
 extension HomeViewModel {

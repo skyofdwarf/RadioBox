@@ -46,11 +46,11 @@ class FavoritesViewController: UIViewController {
         
         bindViewModel()
         
-//        vm.send(action: .lookup)
+        vm.send(action: .fetch)
     }
     
     func configureSubviews() {
-        label.text = "Search stations by name"
+        label.text = "No favorites"
         label.textAlignment = .center
         label.textColor = .secondaryLabel
         indicatorView.color = .red
@@ -62,7 +62,7 @@ class FavoritesViewController: UIViewController {
         
         dataSource = createDataSource()
         
-        searchBar.placeholder = "Search stations by name"
+        searchBar.placeholder = "Search favorited stations"
         searchBar.delegate = self
         
         navigationItem.titleView = searchBar
@@ -89,12 +89,7 @@ class FavoritesViewController: UIViewController {
     
     func bindViewModel() {
         // input
-        queryRelay
-            .compactMap { $0 }
-            .map { FavoritesAction.search($0) }
-            .bind(to: vm.action)
-            .disposed(by: dbag)
-        
+                
         // output
         vm.state.$fetching
             .drive(indicatorView.rx.isAnimating)
@@ -144,6 +139,9 @@ extension FavoritesViewController {
         let stationCellRegistration = UICollectionView.CellRegistration<StationCell, RadioStation>
         { (cell, indexPath, station) in
             cell.configure(station: station)
+            cell.toggleFavorites = { [weak self] _ in
+                self?.vm.send(action: .remove(station))
+            }
         }
         
         return UICollectionViewDiffableDataSource(collectionView: cv)
@@ -211,7 +209,7 @@ extension FavoritesViewController: UICollectionViewDelegate {
         let isLastItem = indexPath.row == numberOfItems - 1
         
         if isLastItem {
-            vm.send(action: .trySearchNextPage)
+            vm.send(action: .fetchNext)
         }
     }
     

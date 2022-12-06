@@ -41,7 +41,7 @@ final class FavoritesServiceTests: XCTestCase {
     }
     
     func testEmptyRows() throws {
-        let stations = db.fetch(offset: 0, limit: 5)
+        let stations = db.fetch()
         
         XCTAssertTrue(stations.isEmpty)
     }
@@ -67,7 +67,7 @@ final class FavoritesServiceTests: XCTestCase {
         XCTAssertTrue(db.add(station))
         
         // then
-        let stations = db.fetch(offset: 0, limit: 1)
+        let stations = db.fetch()
         
         XCTAssertEqual(stations.count, 1)
     }
@@ -90,14 +90,14 @@ final class FavoritesServiceTests: XCTestCase {
                                    codec: "codec",
                                    bitrate: 1)
         XCTAssertTrue(db.add(station))
-        var stations = db.fetch(offset: 0, limit: 1)
+        var stations = db.fetch()
         XCTAssertEqual(stations.count, 1)
         
         // when
         XCTAssertTrue(db.remove(station))
         
         // then
-        stations = db.fetch(offset: 0, limit: 1)
+        stations = db.fetch()
         
         XCTAssertTrue(stations.isEmpty)
     }
@@ -121,7 +121,7 @@ final class FavoritesServiceTests: XCTestCase {
         
         XCTAssertTrue(db.add(station))
         
-        var stations = db.fetch(offset: 0, limit: 5)
+        var stations = db.fetch()
         
         XCTAssertEqual(stations.count, 1)
         
@@ -129,7 +129,7 @@ final class FavoritesServiceTests: XCTestCase {
         XCTAssertFalse(db.add(station))
         
         // then
-        stations = db.fetch(offset: 0, limit: 5)
+        stations = db.fetch()
         
         XCTAssertEqual(stations.count, 1)
     }

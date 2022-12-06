@@ -12,22 +12,22 @@ import RadioBrowser
 import RxSwift
 
 enum FavoritesAction {
-    case search(String)
-    case trySearchNextPage
+    case fetch
+    case fetchNext
+    case remove(RadioStation)
 }
 
 enum FavoritesMutation {
     case fetching(Bool)
-    case stations([RadioStation], reset: Bool)
+    case stations([RadioStation])
+    case add(RadioStation)
+    case remove(RadioStation)
     
-    case keyword(String?)
-    case page(Int)
     case hasNextPage(Bool)
 }
 
 enum FavoritesEvent {
     case coordinate(FavoritesCoordinator.Location)
-    case scrollToTop
 }
 
 extension FavoritesEvent: Coordinating {
@@ -43,28 +43,32 @@ struct FavoritesState {
     @Drived var fetching: Bool = false
     @Drived var stations: [RadioStation] = []
     
-    var keyword: String?
-    var page = 0
     var hasNextPage = true
 }
 
 final class FavoritesViewModel: CoordinatingViewModel<FavoritesAction, FavoritesMutation, FavoritesEvent, FavoritesState> {
+    let favoritesService: FavoritesService
     let service: RadioService
     let player: Player
     
-    init<C: Coordinator>(service: RadioService, coordinator: C, player: Player) where C.Location == Event.Location {
+    private(set) var dbag = DisposeBag()
+    
+    init<C: Coordinator>(service: RadioService, favoritesService: FavoritesService, coordinator: C, player: Player) where C.Location == Event.Location {
         self.service = service
         self.player = player
+        self.favoritesService = favoritesService
         
         super.init(coordinator: coordinator, state: State())
     }
     
     override func react(action: Action, state: State) -> Observable<Reaction> {
         switch action {
-        case .search(let keyword):
-            return searchKeyword(keyword, page: 0)
-        case .trySearchNextPage:
-            return searchKeyword(state.keyword, page: state.page + 1)
+        case .fetch:
+            return fetchFavorites()
+        case .fetchNext:
+            return fetchFavorites()
+        case .remove(let station):
+            return remove(station)
         }
     }
     
@@ -72,19 +76,34 @@ final class FavoritesViewModel: CoordinatingViewModel<FavoritesAction, Favorites
         switch mutation {
         case .fetching(let fetching):
             state.fetching = fetching
-        case .stations(let stations, let reset):
-            if reset {
-                state.stations = stations
-            } else {
-                state.stations += stations
-            }
-        case .page(let page):
-            state.page = page
+        case .stations(let stations):
+            state.stations += stations
         case .hasNextPage(let hasNextPage):
             state.hasNextPage = hasNextPage
-        case .keyword(let keyword):
-            state.keyword = keyword
+        case .add(let station):
+            if !state.stations.contains(station) {
+                state.stations.append(station)
+            }
+        case .remove(let station):
+            if let index = state.stations.firstIndex(where: { $0.stationuuid == station.stationuuid }) {
+                state.stations.remove(at: index)
+            }
         }
+    }
+    
+    override func transform(mutation: Observable<FavoritesMutation>) -> Observable<FavoritesMutation> {
+        let changes = favoritesService.changes
+            .asObservable()
+            .flatMap({ changes -> Observable<FavoritesMutation> in
+                switch changes {
+                case .added(let station):
+                    return .just(.add(station))
+                case .removed(let station):
+                    return .just(.remove(station))
+                }
+            })
+        
+        return .merge(mutation, changes)
     }
 }
 
@@ -93,37 +112,60 @@ extension FavoritesViewModel {
         static let PageLimit = 30
     }
     
-    func searchKeyword(_ keyword: String?, page: Int) -> Observable<Reaction> {
-        guard let keyword, !state.fetching, (page == 0 || state.hasNextPage) else {
+    func fetchFavorites() -> Observable<Reaction> {
+        guard favoritesService.available,
+              !state.fetching,
+              state.hasNextPage
+        else {
             return .empty()
         }
         let limit = Constant.PageLimit
-        let offset = page * limit
+        let offset = state.stations.count
         
         return Observable<Reaction>.create { [weak self] observer in
-            let options: [SearchStationOptions] = [.name(keyword),
-                                                   .offset(offset),
-                                                   .limit(limit) ]
-            self?.service.request(RadioBrowserTarget.searchStation(options), success: { (stationDTOs: [RadioBrowserStation]) in
-                let hasNextPage = stationDTOs.count >= Constant.PageLimit
-                let stations = stationDTOs.map(RadioStation.init(_:))
-                let scrollToTop = !stations.isEmpty && page == 0
-                
-                observer.onNext(.mutation(.stations(stations, reset: offset == 0)))
-                observer.onNext(.mutation(.page(page)))
-                observer.onNext(.mutation(.hasNextPage(hasNextPage)))
-                
-                if scrollToTop {
-                    observer.onNext(.event(.scrollToTop))
-                }
+            guard let self else {
                 observer.onCompleted()
-            }, failure: {
-                observer.onNext(.error($0))
-                observer.onCompleted()
-            })
+                return Disposables.create()
+            }
+            
+            let stations = self.favoritesService.fetch(paging: (offset: offset, limit: limit))
+            let hasNextPage = stations.count >= Constant.PageLimit
+            
+            observer.onNext(.mutation(.hasNextPage(hasNextPage)))
+            observer.onNext(.mutation(.stations(stations)))
+            observer.onCompleted()
+            
             return Disposables.create()
         }
-        .startWith(.mutation(.fetching(true)), .mutation(.keyword(keyword)))
+        .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .userInitiated))
+        .observe(on: MainScheduler.instance)
+        .startWith(.mutation(.fetching(true)))
+        .concat(Observable<Reaction>.just(.mutation(.fetching(false))))
+    }
+    
+    func remove(_ station: RadioStation) -> Observable<Reaction> {
+        guard favoritesService.available
+        else {
+            return .empty()
+        }
+        
+        return Observable<Reaction>.create { [weak self] observer in
+            guard let self else {
+                observer.onCompleted()
+                return Disposables.create()
+            }
+            
+            let success = self.favoritesService.remove(station)
+            if success {
+                observer.onNext(.mutation(.remove(station)))
+            }
+            observer.onCompleted()
+            
+            return Disposables.create()
+        }
+        .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .userInitiated))
+        .observe(on: MainScheduler.instance)
+        .startWith(.mutation(.fetching(true)))
         .concat(Observable<Reaction>.just(.mutation(.fetching(false))))
     }
 }

@@ -34,6 +34,7 @@ final class MainCoordinator: Coordinator {
         return MainViewController(coordinator: self).then {
             $0.viewControllers = [ HomeCoordinator(service: service, favoritesService: favoritesService, player: player).start(),
                                    SearchCoordinator(service: service, player: player).start(),
+                                   FavoritesCoordinator(service: service, favoritesService: favoritesService, player: player).start(),
                                    SettingsCoordinator(service: service, player: player).start(),
             ].map { $0.navigationRooted }
         }
