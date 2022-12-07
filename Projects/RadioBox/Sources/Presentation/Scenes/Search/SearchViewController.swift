@@ -144,6 +144,9 @@ extension SearchViewController {
         let stationCellRegistration = UICollectionView.CellRegistration<StationCell, RadioStation>
         { (cell, indexPath, station) in
             cell.configure(station: station)
+            cell.toggleFavorites = { [weak self] _ in
+                self?.vm.send(action: .toggleFavorites(station))
+            }
         }
         
         return UICollectionViewDiffableDataSource(collectionView: cv)

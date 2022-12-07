@@ -49,12 +49,14 @@ public enum RadioBrowserTarget: TargetType {
 
     /// The type of HTTP task to be performed.
     public var task: Task {
+        let encoding = URLEncoding(destination: .queryString, boolEncoding: .literal)
+        
         switch self {
         case .allStations(let options), .searchStation(let options):
             let params = options.map(\.parameter).reduce(into: [:]) { acc, dict in
                 acc.merge(dict) { $1 }
             }
-            return .requestParameters(parameters: params, encoding: URLEncoding.queryString)
+            return .requestParameters(parameters: params, encoding: encoding)
             
         case let .recentClickStations(offset, limit),
             let .mostClickedStations(offset, limit),
@@ -62,7 +64,8 @@ public enum RadioBrowserTarget: TargetType {
             return .requestParameters(parameters: ["hidebroken": true,
                                                    "offset": offset,
                                                    "limit": limit],
-                                      encoding: URLEncoding.queryString)
+                                      encoding: encoding)
+            
         default:
             return .requestPlain
         }

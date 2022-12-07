@@ -1,8 +1,8 @@
 //
-//  HomeViewController.swift
+//  FavoritesViewController.swift
 //  RadioBox
 //
-//  Created by YEONGJUNG KIM on 2022/11/15.
+//  Created by YEONGJUNG KIM on 2022/12/01.
 //  Copyright © 2022 dwarfini. All rights reserved.
 //
 
@@ -11,26 +11,25 @@ import Stevia
 import RxSwift
 import RxRelay
 import RxCocoa
-import RadioBrowser
 
-class HomeViewController: UIViewController {
+class FavoritesViewController: UIViewController {
+    let label = UILabel()
     let indicatorView = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.large)
+    
     var cv: UICollectionView!
-    
-    let playerBar = PlayerBar()
-    
     private var dataSource: UICollectionViewDiffableDataSource<Section, RadioStation>!
     
-    var vm: HomeViewModel!
+    let searchBar = UISearchBar()
+    let queryRelay = PublishRelay<String?>()
+    
+    var vm: FavoritesViewModel!
     var dbag = DisposeBag()
     
     init() {
         super.init(nibName: nil, bundle: nil)
         
-        title = "Most voted"
-        
-        tabBarItem = UITabBarItem(title: "Home",
-                                  image: UIImage(systemName: "radio"),
+        tabBarItem = UITabBarItem(title: "Favorites",
+                                  image: UIImage(systemName: "bookmark.circle"),
                                   tag: 0)
     }
     
@@ -44,12 +43,16 @@ class HomeViewController: UIViewController {
         view.backgroundColor = .systemBackground
         
         configureSubviews()
+        
         bindViewModel()
         
-        vm.send(action: .ready)
+        vm.send(action: .fetch)
     }
     
     func configureSubviews() {
+        label.text = "No favorites"
+        label.textAlignment = .center
+        label.textColor = .secondaryLabel
         indicatorView.color = .red
         indicatorView.hidesWhenStopped = true
         
@@ -59,39 +62,65 @@ class HomeViewController: UIViewController {
         
         dataSource = createDataSource()
         
+        searchBar.placeholder = "Search favorited stations"
+        searchBar.delegate = self
+        
+        navigationItem.titleView = searchBar
+        
         layoutSubviews()
     }
     
     func layoutSubviews() {
-        view.subviews (
-            cv,
+        view.subviews {
+            cv!
+            label
             indicatorView
-        )
+        }
         
         view.layout {
+            |-label-|
+            6
+            |-indicatorView-|
         }
         
         cv.fillContainer()
-        indicatorView.centerInContainer()
+        label.centerInContainer()
     }
     
     func bindViewModel() {
+        // input
+                
+        // output
         vm.state.$fetching
             .drive(indicatorView.rx.isAnimating)
             .disposed(by: dbag)
         
         vm.state.$stations
-            .asObservable()
-            .bind(with: self) { this, stations in
+            .map { !$0.isEmpty }
+            .drive(label.rx.isHidden)
+            .disposed(by: dbag)
+
+        vm.state.$stations
+            .drive(with: self) { this, stations in
                 this.applyDataSource(stations: stations)
             }
             .disposed(by: dbag)
+        
+        vm.event
+            .emit(with: self) { this, _ in
+                this.scrollToTop()
+            }
+            .disposed(by: dbag)
+    }
+    
+    func scrollToTop() {
+        cv.scrollToItem(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
     }
 }
 
 // MARK: CollectioNView
 
-extension HomeViewController {
+extension FavoritesViewController {
     enum Section: Int, CaseIterable {
         case mostVoted
         
@@ -111,7 +140,7 @@ extension HomeViewController {
         { (cell, indexPath, station) in
             cell.configure(station: station)
             cell.toggleFavorites = { [weak self] _ in
-                self?.vm.send(action: .toggleFavorites(station))
+                self?.vm.send(action: .remove(station))
             }
         }
         
@@ -146,12 +175,12 @@ extension HomeViewController {
         snapshot.appendItems(stations, toSection: .mostVoted)
         
         dataSource.apply(snapshot, animatingDifferences: false)
-    }    
+    }
 }
 
 // MARK: - CollectionView layouts
 
-extension HomeViewController {
+extension FavoritesViewController {
     static func createCollectionViewLayout() -> UICollectionViewCompositionalLayout {
         return UICollectionViewCompositionalLayout { section, environment in
             switch Section(rawValue: section) {
@@ -166,7 +195,7 @@ extension HomeViewController {
 
 // MARK: - CollectionViewDelegate
 
-extension HomeViewController: UICollectionViewDelegate {
+extension FavoritesViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let station = dataSource.itemIdentifier(for: indexPath) else {
             return
@@ -180,13 +209,14 @@ extension HomeViewController: UICollectionViewDelegate {
         let isLastItem = indexPath.row == numberOfItems - 1
         
         if isLastItem {
-            vm.send(action: .tryFetchNextPage)
+            vm.send(action: .fetchNext)
         }
     }
     
+    
     func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         guard let station = dataSource.itemIdentifier(for: indexPath),
-              let coordinator = vm.coordinator as? HomeCoordinator
+              let coordinator = vm.coordinator as? SearchCoordinator
         else {
             return nil
         }
@@ -200,8 +230,23 @@ extension HomeViewController: UICollectionViewDelegate {
         }
         
         animator.addCompletion { [weak self] in
-            guard let coordinator = self?.vm.coordinator as? HomeCoordinator else { return }
+            guard let coordinator = self?.vm.coordinator as? SearchCoordinator else { return }
             coordinator.coordinate(.pop(vc))
         }
+    }
+}
+
+// MARK: UISearchBarDelegate
+
+extension FavoritesViewController: UISearchBarDelegate {
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
+        
+        let query = searchBar.text
+        self.queryRelay.accept(query)
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
     }
 }

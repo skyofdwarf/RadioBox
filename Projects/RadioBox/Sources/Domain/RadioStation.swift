@@ -25,15 +25,17 @@ struct RadioStation {
     let languagecodes: String
     let codec: String
     let bitrate: Int
+    var favorited = false
 }
 
 extension RadioStation: Hashable {
     func hash(into hasher: inout Hasher) {
         hasher.combine(stationuuid)
+        hasher.combine(favorited)
     }
     
     static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.stationuuid == rhs.stationuuid 
+        lhs.stationuuid == rhs.stationuuid && lhs.favorited == rhs.favorited
     }
 }
 

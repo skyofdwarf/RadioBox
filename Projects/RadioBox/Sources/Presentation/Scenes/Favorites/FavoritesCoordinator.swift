@@ -1,25 +1,25 @@
 //
-//  SearchCoordinator.swift
+//  FavoritesCoordinator.swift
 //  RadioBox
 //
-//  Created by YEONGJUNG KIM on 2022/11/15.
+//  Created by YEONGJUNG KIM on 2022/12/01.
 //  Copyright © 2022 dwarfini. All rights reserved.
 //
 
 import UIKit
 import RDXVM
 
-final class SearchCoordinator: Coordinator {
+final class FavoritesCoordinator: Coordinator {
     enum Location {
         case station(RadioStation)
         case pop(UIViewController)
     }
     
     let service: RadioService
-    let player: Player
     let favoritesService: FavoritesService
+    let player: Player
     
-    private(set) weak var target: SearchViewController?
+    private(set) weak var target: FavoritesViewController?
     
     init(service: RadioService, favoritesService: FavoritesService, player: Player) {
         self.service = service
@@ -27,15 +27,15 @@ final class SearchCoordinator: Coordinator {
         self.player = player
     }
     
-    func instantiateTarget() -> SearchViewController {
-        SearchViewController().then {
+    func instantiateTarget() -> FavoritesViewController {
+        FavoritesViewController().then {
             self.target = $0
-            $0.vm = SearchViewModel(service: service, favoritesService: favoritesService, coordinator: self, player: player)
+            $0.vm = FavoritesViewModel(service: service, favoritesService: favoritesService, coordinator: self, player: player)
         }
     }
     
     @discardableResult
-    func start() -> SearchViewController {
+    func start() -> FavoritesViewController {
         // just return vc instance
         instantiateTarget()
     }

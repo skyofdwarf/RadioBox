@@ -31,7 +31,7 @@ final class AppCoordinator: Coordinator {
     
     @discardableResult
     func start() -> UIWindow {
-        LookupCoordinator(window: window, player: UIApplication.player).start()
+        LookupCoordinator(window: window, player: UIApplication.player, favoritesService: UIApplication.favoritesService).start()
         return window
     }
 }
