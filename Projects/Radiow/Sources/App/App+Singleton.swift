@@ -14,7 +14,7 @@ extension UIApplication {
     static let player = RadioPlayer()
     
     static let coordinator = AppCoordinator()
-    static let model = AppModel(coordinator: coordinator, player: player)
+    static let model = AppModel(coordinator: coordinator, player: player, appUpdateChecker: AppStoreUpdateChecker())
     static let favoritesService = FavoritesService()
     
     var version: String { Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0" }
