@@ -59,11 +59,13 @@ class SearchViewController: UIViewController {
         cv = UICollectionView(frame: view.bounds, collectionViewLayout: Self.createCollectionViewLayout())
         cv.delegate = self
         cv.backgroundColor = .systemBackground
+        cv.keyboardDismissMode = .interactive
         
         dataSource = createDataSource()
         
         searchBar.placeholder = "Search stations by name"
         searchBar.delegate = self
+        searchBar.showsCancelButton = true
         
         navigationItem.titleView = searchBar
         
