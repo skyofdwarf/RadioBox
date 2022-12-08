@@ -2,6 +2,6 @@ import ProjectDescription
 
 let config = Config(
     plugins: [
-        .local(path: .relativeToManifest("../../Plugins/RadioBox")),
+        .local(path: .relativeToManifest("../../Plugins/Radiow")),
     ]
 )

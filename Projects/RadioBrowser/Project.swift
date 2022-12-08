@@ -5,7 +5,7 @@ import MyPlugin
 /*
                 +-------------+
                 |             |
-                |     App     | Contains RadioBox App target and RadioBox unit-test target
+                |     App     | Contains Radiow App target and Radiow unit-test target
                 |             |
          +------+-------------+-------+
          |         depends on         |

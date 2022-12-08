@@ -4,7 +4,7 @@ import Moya
 // https://api.radio-browser.info/
 
 open class RadioBrowser: APIService {
-    public convenience init(userAgent: String = "RadioBox/0.1.0") {
+    public convenience init(userAgent: String = "Radiow/0.1.0") {
 #if DEBUG
         let plugins: [PluginType] = [
             NetworkLoggerPlugin(configuration: .init(logOptions: .verbose)),

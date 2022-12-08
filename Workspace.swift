@@ -1,7 +1,7 @@
 import ProjectDescription
 
 let workspace = Workspace(
-    name: "RadioBox",
+    name: "Radiow",
     projects: ["Projects/**"],
     additionalFiles: [
         "README.md",

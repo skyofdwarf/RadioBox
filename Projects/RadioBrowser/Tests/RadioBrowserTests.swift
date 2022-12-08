@@ -5,7 +5,7 @@ import Moya
 @testable import RadioBrowser
 
 public final class StubBrowser: APIService {
-    public init(userAgent: String = "RadioBox/1.0.0") {
+    public init(userAgent: String = "Radiow/1.0.0") {
         let plugins: [PluginType] = [
             NetworkLoggerPlugin(configuration: .init(logOptions: .verbose)),
         ]
