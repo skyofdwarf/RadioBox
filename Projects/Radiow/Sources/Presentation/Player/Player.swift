@@ -26,12 +26,19 @@ enum PlayerStatus {
     }
 }
 
+
 protocol Player: AnyObject {
-    var status: AnyPublisher<PlayerStatus, Never> { get }
-    var station: AnyPublisher<RadioStation?, Never> { get }
-    var error: AnyPublisher<Error, Never> { get }
-    var streamTitle: AnyPublisher<(title: String, artist: String?), Never> { get }
-    var streamArtwork: AnyPublisher<URL?, Never> { get }
+    var status: PlayerStatus { get }
+    var station: RadioStation? { get }
+    var streamTitle: (title: String, artist: String?) { get }
+    var streamArtwork: URL? { get }
+    
+    var statusPublisher: AnyPublisher<PlayerStatus, Never> { get }
+    var stationPublisher: AnyPublisher<RadioStation?, Never> { get }
+    var streamTitlePublisher: AnyPublisher<(title: String, artist: String?), Never> { get }
+    var streamArtworkPublisher: AnyPublisher<URL?, Never> { get }
+
+    var errorPublisher: AnyPublisher<Error, Never> { get }
     
     var isPlaying: Bool { get }
     

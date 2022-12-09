@@ -27,21 +27,23 @@ class RadioPlayer: NSObject, Player {
     enum PlayerError: Swift.Error {
         case invalidURL(String)
     }
-    
     private let statusSubject = CurrentValueSubject<PlayerStatus, Never>(.disabled)
-    var status: AnyPublisher<PlayerStatus, Never> { statusSubject.eraseToAnyPublisher() }
-    
     private let stationSubject = CurrentValueSubject<RadioStation?, Never>(nil)
-    var station: AnyPublisher<RadioStation?, Never> { stationSubject.eraseToAnyPublisher() }
+    private let streamTitleSubject = CurrentValueSubject<(title: String, artist: String?), Never>(("", nil))
+    private let streamArtworkSubject = CurrentValueSubject<URL?, Never>(nil)
     
     private let errorSubject = PassthroughSubject<Error, Never>()
-    var error: AnyPublisher<Error, Never> { errorSubject.eraseToAnyPublisher() }
     
-    private let streamTitleSubject = CurrentValueSubject<(title: String, artist: String?), Never>(("", nil))
-    var streamTitle: AnyPublisher<(title: String, artist: String?), Never> { streamTitleSubject.eraseToAnyPublisher() }
+    var status: PlayerStatus { statusSubject.value }
+    var station: RadioStation? { stationSubject.value }
+    var streamTitle: (title: String, artist: String?) { streamTitleSubject.value }
+    var streamArtwork: URL? { streamArtworkSubject.value }
     
-    private let streamArtworkSubject = CurrentValueSubject<URL?, Never>(nil)
-    var streamArtwork: AnyPublisher<URL?, Never> { streamArtworkSubject.eraseToAnyPublisher() }
+    var statusPublisher: AnyPublisher<PlayerStatus, Never> { statusSubject.eraseToAnyPublisher() }
+    var stationPublisher: AnyPublisher<RadioStation?, Never> { stationSubject.eraseToAnyPublisher() }
+    var streamTitlePublisher: AnyPublisher<(title: String, artist: String?), Never> { streamTitleSubject.eraseToAnyPublisher() }
+    var streamArtworkPublisher: AnyPublisher<URL?, Never> { streamArtworkSubject.eraseToAnyPublisher() }
+    var errorPublisher: AnyPublisher<Error, Never> { errorSubject.eraseToAnyPublisher() }
     
     private let player = AVPlayer()
     private var playerItem: AVPlayerItem?

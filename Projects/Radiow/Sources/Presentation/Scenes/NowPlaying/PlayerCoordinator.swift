@@ -30,6 +30,7 @@ final class PlayerCoordinator: Coordinator {
     func instantiateTarget() -> PlayerViewController {
         PlayerViewController().then {
             $0.vm = PlayerViewModel(coordinator: self,
+                                    favoritesService: UIApplication.favoritesService,
                                     player: player)
         }
     }

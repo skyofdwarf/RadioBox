@@ -171,24 +171,24 @@ class PlayerBar: UIToolbar {
         dbag = []
         self.player = player
         
-        player.status.sink { [weak self] status in
+        player.statusPublisher.sink { [weak self] status in
             self?.updatePlayButton(status: status)
         }.store(in: &dbag)
         
-        player.station.sink { [weak self] station in
+        player.stationPublisher.sink { [weak self] station in
             self?.updateInfo(with: station)
         }.store(in: &dbag)
         
-        player.streamTitle.sink { [weak self] (title, artist) in
+        player.streamTitlePublisher.sink { [weak self] (title, artist) in
             self?.updateTitle(title, artist: artist)
         }.store(in: &dbag)
         
-        player.streamArtwork.sink { [weak self] url in
+        player.streamArtworkPublisher.sink { [weak self] url in
             self?.updateFavicon(url: url)
         }.store(in: &dbag)
         
         
-        player.error.sink {
+        player.errorPublisher.sink {
             print("error: \($0)")
         }.store(in: &dbag)
     }

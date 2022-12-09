@@ -12,12 +12,14 @@ import RxSwift
 import Combine
 import MediaPlayer
 import AVKit
+import Stevia
 
 class PlayerViewController: UIViewController {
     let imageContainerView = UIView()
     let controlContainerView = UIView()
     let stationInfoStackView = UIStackView()
     
+    let favoriteButton = UIButton(type: .custom)
     let imageView = UIImageView()
     let stationNameLabel = UILabel()
     let stationSpecLabel = UILabel()
@@ -56,6 +58,18 @@ class PlayerViewController: UIViewController {
         imageView.clipsToBounds = true
         imageView.tintColor = .systemGray
         imageView.layer.cornerRadius = 10
+        
+        let symbolConfiguration = UIImage.SymbolConfiguration(textStyle: .headline, scale: .large)
+        
+        favoriteButton.setPreferredSymbolConfiguration(symbolConfiguration, forImageIn: .normal)
+        favoriteButton.setPreferredSymbolConfiguration(symbolConfiguration, forImageIn: .selected)
+        favoriteButton.setImage(UIImage(systemName: "bookmark"), for: .normal)
+        favoriteButton.setImage(UIImage(systemName: "bookmark.fill"), for: .selected)
+        favoriteButton.tintColor = .systemRed
+        favoriteButton.backgroundColor = .systemRed.withAlphaComponent(0.2)
+        favoriteButton.layer.cornerRadius = 48/2
+        favoriteButton.layer.borderColor = UIColor.systemRed.cgColor
+        favoriteButton.layer.borderWidth = 2
         
         stationInfoStackView.axis = .vertical
         stationNameLabel.font = .preferredFont(forTextStyle: .caption2)
@@ -112,6 +126,7 @@ class PlayerViewController: UIViewController {
         view.subviews {
             imageContainerView
             controlContainerView
+            favoriteButton
         }
         
         let infoStackView = UIStackView(arrangedSubviews: [imageView, stationInfoStackView]).then {
@@ -121,6 +136,10 @@ class PlayerViewController: UIViewController {
         imageContainerView.subviews {
             infoStackView
         }
+        
+//        imageView.subviews {
+//            favoriteButton
+//        }
 
         controlContainerView.subviews {
             titleLabel
@@ -133,6 +152,8 @@ class PlayerViewController: UIViewController {
             }
             routePickerView
         }
+        
+        favoriteButton.top(10).right(10).size(48)
         
         stationInfoStackView.addArrangedSubview(stationNameLabel)
         stationInfoStackView.addArrangedSubview(stationSpecLabel)
@@ -210,7 +231,22 @@ class PlayerViewController: UIViewController {
     }
 
     func bindViewModel() {
-        vm.player.status.sink { [weak self] status in
+        // input
+        favoriteButton.rx.tap
+            .bind(with: self) { this, _ in
+                this.vm.send(action: .toggleFavorites)
+            }
+            .disposed(by: dbag)
+        
+        // output
+        vm.state.$station.compactMap { $0 }
+            .map(\.favorited)
+            .drive(with: self) { this, favorited in
+                this.favoriteButton.isSelected = favorited
+            }
+            .disposed(by: dbag)
+        
+        vm.player.statusPublisher.sink { [weak self] status in
             let image = UIImage(systemName: status.symbolName, withConfiguration: UIImage.SymbolConfiguration(pointSize: 30))
             self?.playButton.setImage(image, for: .normal)
             
@@ -218,7 +254,7 @@ class PlayerViewController: UIViewController {
             self?.playButton.isEnabled = status != .disabled
         }.store(in: &cbag)
         
-        vm.player.station
+        vm.player.stationPublisher
             .sink { [weak self] in
                 guard let station = $0 else { return }
                 let info = [station.codec, String(station.bitrate), station.country]
@@ -234,26 +270,26 @@ class PlayerViewController: UIViewController {
                     .joined(separator: " ")
             }.store(in: &cbag)
         
-        vm.player.streamTitle
+        vm.player.streamTitlePublisher
             .map { $0.title }
             .sink { [weak self] in
                 self?.titleLabel.text = $0
             }.store(in: &cbag)
         
-        vm.player.streamTitle
+        vm.player.streamTitlePublisher
             .map { $0.artist }
             .sink { [weak self] in
                 self?.artistLabel.text = $0
             }.store(in: &cbag)
         
-        vm.player.streamArtwork
+        vm.player.streamArtworkPublisher
             .sink { [weak self] url in
                 self?.imageView.kf.setImage(with: url,
                                            placeholder: UIImage(systemName: "music.note.house"),
                                            options: [ .transition(.fade(0.3)) ])
             }.store(in: &cbag)
         
-        vm.player.error
+        vm.player.errorPublisher
             .sink {
                 print("error: \($0)")
             }.store(in: &cbag)
