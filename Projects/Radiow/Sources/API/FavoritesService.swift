@@ -236,6 +236,9 @@ final class FavoritesService {
         """
         
         if run(sql: sql) == SQLITE_DONE {
+            var station = station
+            station.favorited = true
+            
             changesRelay.accept(.added(station))
             return true
         }
@@ -255,6 +258,9 @@ final class FavoritesService {
         let sql = "DELETE FROM \(tableName) WHERE stationuuid = '\(station.stationuuid)';"
         
         if run(sql: sql) == SQLITE_DONE {
+            var station = station
+            station.favorited = false
+            
             changesRelay.accept(.removed(station))
             return true
         }
