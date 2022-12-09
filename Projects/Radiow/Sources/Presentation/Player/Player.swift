@@ -33,6 +33,8 @@ protocol Player: AnyObject {
     var streamTitle: AnyPublisher<(title: String, artist: String?), Never> { get }
     var streamArtwork: AnyPublisher<URL?, Never> { get }
     
+    var isPlaying: Bool { get }
+    
     func play(station: RadioStation)
     func resume()
     func stop()

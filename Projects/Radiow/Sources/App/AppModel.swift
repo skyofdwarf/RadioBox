@@ -56,7 +56,9 @@ final class AppModel: CoordinatingViewModel<AppAction, AppMutation, AppEvent, Ap
     override func react(action: Action, state: State) -> Observable<Reaction> {
         switch action {
         case .showPlayer(let player, let vc):
+            guard player.isPlaying else { return .empty() }
             return .just(.event(.coordinate(.player(player, from: vc))))
+            
         case .checkAppUpdate:
             return Observable<Reaction>.create { [weak self] observer in
                 guard let self else {
