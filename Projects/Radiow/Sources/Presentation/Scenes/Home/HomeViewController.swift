@@ -48,6 +48,24 @@ class HomeViewController: UIViewController {
         
         vm.send(action: .ready)
     }
+        
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        guard isViewLoaded else { return }
+        
+        defer {
+            super.viewWillTransition(to: size, with: coordinator)
+        }
+        
+        if #available(iOS 14, *) {
+            // Do nothing
+        } else {
+            if let layout = cv.collectionViewLayout as? UICollectionViewCompositionalLayout {
+                coordinator.animate { _ in
+                    layout.invalidateLayout()
+                }
+            }
+        }
+    }
     
     func configureSubviews() {
         indicatorView.color = .red
