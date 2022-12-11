@@ -28,7 +28,7 @@ extension NSCollectionLayoutSection {
         group.interItemSpacing = .flexible(itemSpacing)
         
         return NSCollectionLayoutSection(group: group).then {
-            $0.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: sectionInset, bottom: 0, trailing: sectionInset)
+            $0.contentInsets = NSDirectionalEdgeInsets(top: sectionInset, leading: sectionInset, bottom: sectionInset, trailing: sectionInset)
             $0.interGroupSpacing = 4
         }
     }
