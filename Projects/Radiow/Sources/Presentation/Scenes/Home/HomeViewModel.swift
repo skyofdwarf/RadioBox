@@ -15,6 +15,7 @@ import Combine
 import Moya
 
 enum HomeAction {
+    case play(RadioStation)
     case ready
     case tryFetchNextPage
     case toggleFavorites(RadioStation)
@@ -66,6 +67,9 @@ final class HomeViewModel: CoordinatingViewModel<HomeAction, HomeMutation, HomeE
     
     override func react(action: Action, state: State) -> Observable<Reaction> {
         switch action {
+        case .play(let station):
+            player.play(station: station)
+            return clickStation(station)
         case .ready:
             return fetchPage(0)
         case .tryFetchNextPage:
@@ -119,6 +123,11 @@ final class HomeViewModel: CoordinatingViewModel<HomeAction, HomeMutation, HomeE
 extension HomeViewModel {
     enum Constant {
         static let PageLimit = 30
+    }
+    
+    func clickStation(_ station: RadioStation) -> Observable<Reaction> {
+        service.request(RadioBrowserTarget.clickStation(station.stationuuid)) { _ in }
+        return .empty()
     }
     
     func fetchPage(_ page: Int) -> Observable<Reaction> {

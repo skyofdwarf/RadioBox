@@ -210,7 +210,7 @@ extension SearchViewController: UICollectionViewDelegate {
             return
         }
         
-        vm.player.play(station: station)
+        vm.send(action: .play(station))
     }
     
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {

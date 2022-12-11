@@ -12,6 +12,7 @@ import RadioBrowser
 import RxSwift
 
 enum SearchAction {
+    case play(RadioStation)
     case search(String)
     case trySearchNextPage
     case toggleFavorites(RadioStation)
@@ -65,6 +66,9 @@ final class SearchViewModel: CoordinatingViewModel<SearchAction, SearchMutation,
     
     override func react(action: Action, state: State) -> Observable<Reaction> {
         switch action {
+        case .play(let station):
+            player.play(station: station)
+            return clickStation(station)
         case .search(let keyword):
             return searchKeyword(keyword, page: 0)
         case .trySearchNextPage:
@@ -120,6 +124,11 @@ final class SearchViewModel: CoordinatingViewModel<SearchAction, SearchMutation,
 extension SearchViewModel {
     enum Constant {
         static let PageLimit = 30
+    }
+    
+    func clickStation(_ station: RadioStation) -> Observable<Reaction> {
+        service.request(RadioBrowserTarget.clickStation(station.stationuuid)) { _ in }
+        return .empty()
     }
     
     func searchKeyword(_ keyword: String?, page: Int) -> Observable<Reaction> {

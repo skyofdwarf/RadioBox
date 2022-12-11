@@ -12,6 +12,7 @@ import RadioBrowser
 import RxSwift
 
 enum FavoritesAction {
+    case play(RadioStation)
     case fetch
     case fetchNext
     case remove(RadioStation)
@@ -63,6 +64,9 @@ final class FavoritesViewModel: CoordinatingViewModel<FavoritesAction, Favorites
     
     override func react(action: Action, state: State) -> Observable<Reaction> {
         switch action {
+        case .play(let station):
+            player.play(station: station)
+            return clickStation(station)
         case .fetch:
             return fetchFavorites()
         case .fetchNext:
@@ -110,6 +114,11 @@ final class FavoritesViewModel: CoordinatingViewModel<FavoritesAction, Favorites
 extension FavoritesViewModel {
     enum Constant {
         static let PageLimit = 30
+    }
+    
+    func clickStation(_ station: RadioStation) -> Observable<Reaction> {
+        service.request(RadioBrowserTarget.clickStation(station.stationuuid)) { _ in }
+        return .empty()
     }
     
     func fetchFavorites() -> Observable<Reaction> {
