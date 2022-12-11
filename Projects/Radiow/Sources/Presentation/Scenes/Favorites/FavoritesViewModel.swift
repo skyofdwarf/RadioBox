@@ -13,6 +13,7 @@ import RxSwift
 
 enum FavoritesAction {
     case play(RadioStation)
+    case filter(String)
     case fetch
     case fetchNext
     case remove(RadioStation)
@@ -24,6 +25,8 @@ enum FavoritesMutation {
     case add(RadioStation)
     case remove(RadioStation)
     
+    case filterKeyword(String?)
+    case filteredStations([RadioStation])
     case hasNextPage(Bool)
 }
 
@@ -42,7 +45,10 @@ extension FavoritesEvent: Coordinating {
 
 struct FavoritesState {
     @Drived var fetching: Bool = false
-    @Drived var stations: [RadioStation] = []
+    @Drived var filteredStations: [RadioStation] = []
+    
+    var stations: [RadioStation] = []
+    var filterKeyword: String?
     
     var hasNextPage = true
 }
@@ -67,6 +73,8 @@ final class FavoritesViewModel: CoordinatingViewModel<FavoritesAction, Favorites
         case .play(let station):
             player.play(station: station)
             return clickStation(station)
+        case .filter(let keyword):
+            return filterStations(keyword: keyword)
         case .fetch:
             return fetchFavorites()
         case .fetchNext:
@@ -88,10 +96,19 @@ final class FavoritesViewModel: CoordinatingViewModel<FavoritesAction, Favorites
             if !state.stations.contains(station) {
                 state.stations.append(station)
             }
+            state.filteredStations = Self.filterStations(state.stations, by: state.filterKeyword)
+            
         case .remove(let station):
             if let index = state.stations.firstIndex(where: { $0.stationuuid == station.stationuuid }) {
                 state.stations.remove(at: index)
             }
+            if let index = state.filteredStations.firstIndex(where: { $0.stationuuid == station.stationuuid }) {
+                state.filteredStations.remove(at: index)
+            }
+        case .filterKeyword(let keyword):
+            state.filterKeyword = keyword
+        case .filteredStations(let stations):
+            state.filteredStations = stations
         }
     }
     
@@ -121,6 +138,26 @@ extension FavoritesViewModel {
         return .empty()
     }
     
+    static func filterStations(_ stations: [RadioStation], by keyword: String?) -> [RadioStation] {
+        guard let keyword,
+              !keyword.trimmingCharacters(in: CharacterSet.whitespaces).isEmpty
+        else {
+            return stations
+        }
+        
+        return stations.filter {
+            $0.name.localizedCaseInsensitiveContains(keyword)
+        }
+    }
+    
+    func filterStations(keyword: String?) -> Observable<Reaction> {
+        let filteredStations = Self.filterStations(state.stations, by: keyword)
+        
+        return .of(.mutation(.filterKeyword(keyword)),
+                   .mutation(.filteredStations(filteredStations)))
+        .observe(on: MainScheduler.asyncInstance)
+    }
+    
     func fetchFavorites() -> Observable<Reaction> {
         guard favoritesService.available,
               !state.fetching,
@@ -142,6 +179,7 @@ extension FavoritesViewModel {
             
             observer.onNext(.mutation(.hasNextPage(hasNextPage)))
             observer.onNext(.mutation(.stations(stations)))
+            observer.onNext(.mutation(.filteredStations(stations)))
             observer.onCompleted()
             
             return Disposables.create()

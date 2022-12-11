@@ -76,6 +76,7 @@ class FavoritesViewController: UIViewController {
         searchBar.placeholder = "Search favorited stations"
         searchBar.delegate = self
         searchBar.showsCancelButton = true
+        searchBar.returnKeyType = .done
         
         navigationItem.titleView = searchBar
         
@@ -101,18 +102,23 @@ class FavoritesViewController: UIViewController {
     
     func bindViewModel() {
         // input
+        queryRelay
+            .compactMap { $0 }
+            .map { FavoritesAction.filter($0) }
+            .bind(to: vm.action)
+            .disposed(by: dbag)
                 
         // output
         vm.state.$fetching
             .drive(indicatorView.rx.isAnimating)
             .disposed(by: dbag)
         
-        vm.state.$stations
+        vm.state.$filteredStations
             .map { !$0.isEmpty }
             .drive(label.rx.isHidden)
             .disposed(by: dbag)
 
-        vm.state.$stations
+        vm.state.$filteredStations
             .drive(with: self) { this, stations in
                 this.applyDataSource(stations: stations)
             }
@@ -251,11 +257,13 @@ extension FavoritesViewController: UICollectionViewDelegate {
 // MARK: UISearchBarDelegate
 
 extension FavoritesViewController: UISearchBarDelegate {
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        searchBar.resignFirstResponder()
-        
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         let query = searchBar.text
         self.queryRelay.accept(query)
+    }
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
