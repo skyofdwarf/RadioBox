@@ -123,7 +123,7 @@ class StationViewController: UIViewController {
                     .joined(separator: " ")
                 
                 this.imageView.kf.setImage(with: URL(string: station.favicon),
-                                           placeholder: UIImage(systemName: "music.note.house"),
+                                           placeholder: UIImage(systemName: "music.note.list"),
                                            options: [ .transition(.fade(0.3)) ])
             }.disposed(by: dbag)
     }

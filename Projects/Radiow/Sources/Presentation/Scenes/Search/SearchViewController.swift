@@ -60,6 +60,8 @@ class SearchViewController: UIViewController {
         cv.delegate = self
         cv.backgroundColor = .systemBackground
         cv.keyboardDismissMode = .interactive
+        cv.register(StationCell.self, forCellWithReuseIdentifier: StationCell.identifier)
+        cv.register(StationSectionHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: StationSectionHeaderView.identifier)
         
         dataSource = createDataSource()
         
@@ -143,33 +145,33 @@ extension SearchViewController {
     }
     
     func createDataSource() -> UICollectionViewDiffableDataSource<Section, RadioStation> {
-        let stationCellRegistration = UICollectionView.CellRegistration<StationCell, RadioStation>
-        { (cell, indexPath, station) in
-            cell.configure(station: station)
-            cell.toggleFavorites = { [weak self] _ in
-                self?.vm.send(action: .toggleFavorites(station))
-            }
-        }
-        
-        return UICollectionViewDiffableDataSource(collectionView: cv)
-        { (collectionView, indexPath, identifier) in
+        return UICollectionViewDiffableDataSource<Section, RadioStation>(collectionView: cv)
+        { (collectionView, indexPath, station) -> UICollectionViewCell? in
             guard let section = Section(rawValue: indexPath.section) else { return nil }
-            
+
             switch section {
             case .mostVoted:
-                return collectionView.dequeueConfiguredReusableCell(using: stationCellRegistration, for: indexPath, item: identifier)
+                guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: StationCell.identifier, for: indexPath) as? StationCell
+                else { return nil }
+                cell.configure(station: station)
+                cell.toggleFavorites = { [weak self] _ in
+                    self?.vm.send(action: .toggleFavorites(station))
+                }
+                return cell
             }
-        }.then {
-            let headerRegistration = UICollectionView.SupplementaryRegistration<StationSectionHeaderView>(elementKind: UICollectionView.elementKindSectionHeader) {
-                (view, kind, indexPath) in
-                
-                guard let section = Section(rawValue: indexPath.section) else { return }
-                
-                view.configure(title: section.title)
-            }
-            
+        } .then {
             $0.supplementaryViewProvider = { (cv, kind, indexPath) in
-                return cv.dequeueConfiguredReusableSupplementary(using: headerRegistration, for: indexPath)
+                guard let header = cv.dequeueReusableSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader,
+                                                    withReuseIdentifier: StationSectionHeaderView.identifier,
+                                                                       for: indexPath) as? StationSectionHeaderView,
+                      let section = Section(rawValue: indexPath.section)
+                else {
+                    return nil
+                }
+
+                header.configure(title: section.title)
+
+                return header
             }
         }
     }

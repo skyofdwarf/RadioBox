@@ -13,7 +13,7 @@ import RxRelay
 import RxCocoa
 
 class LookupViewController: UIViewController {
-    let radioImageView = UIImageView(image: UIImage(systemName: "radio"))
+    let radioImageView = UIImageView(image: UIImage(systemName: "waveform.circle"))    
     let indicatorView = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.large)
     let retryButton = UIButton(type: .system)
     
@@ -37,17 +37,17 @@ class LookupViewController: UIViewController {
         vm.send(action: .lookup)
     }
     
+    @objc func retryButtonDidTap(_ sender: Any) {
+        vm.send(action: .lookup)
+    }
+    
     func configureSubviews() {
         radioImageView.contentMode = .scaleAspectFit
         radioImageView.tintColor = UIColor(white: 0.2, alpha: 1) //< #262626
         indicatorView.color = .red
         indicatorView.hidesWhenStopped = true
         
-        let retryLookupAction = UIAction { [weak self] _ in
-            self?.vm.send(action: .lookup)
-        }
-        
-        retryButton.addAction(retryLookupAction, for: .touchUpInside)
+        retryButton.addTarget(self, action: #selector(retryButtonDidTap(_:)), for: .touchUpInside)
         retryButton.setTitle("Retry to connect server", for: .normal)
     }
     

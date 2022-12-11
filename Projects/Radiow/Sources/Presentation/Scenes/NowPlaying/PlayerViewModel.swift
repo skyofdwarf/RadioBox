@@ -50,7 +50,7 @@ final class PlayerViewModel: CoordinatingViewModel<PlayerAction, PlayerMutation,
         var state = State(station: player.station)
         
         // get favorites state in DB
-        if var station = player.station {
+        if let station = player.station {
             state.station?.favorited = favoritesService.contains(stationuuid: station.stationuuid)
         }
         

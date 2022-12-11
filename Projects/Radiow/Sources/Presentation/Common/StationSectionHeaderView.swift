@@ -10,6 +10,8 @@ import UIKit
 import Stevia
 
 class StationSectionHeaderView: UICollectionReusableView {
+    static let identifier = "StationSectionHeaderView"
+    
     let label = UILabel()
 
     override init(frame: CGRect) {

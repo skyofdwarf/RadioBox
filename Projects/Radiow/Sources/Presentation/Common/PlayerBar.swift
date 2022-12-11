@@ -78,11 +78,12 @@ class PlayerBar: UIToolbar {
         return size
     }
     
+    @objc func playButtonDidTap(_ sender: Any) {
+        player?.toggle()
+    }
+    
     func setup() {
-        let action = UIAction { [weak self] _ in
-            self?.player?.toggle()
-        }
-        playButton.addAction(action, for: .touchUpInside)
+        playButton.addTarget(self, action: #selector(playButtonDidTap(_:)), for: .touchUpInside)
         
         let container = UIView().then {
             $0.clipsToBounds = true
@@ -157,7 +158,7 @@ class PlayerBar: UIToolbar {
         }
         
         faviconImageView.kf.setImage(with: url,
-                                     placeholder: UIImage(systemName: "music.note.house"),
+                                     placeholder: UIImage(systemName: "music.note.list"),
                                      options: [ .transition(.fade(0.3)) ]) {
             switch $0 {
             case .success:

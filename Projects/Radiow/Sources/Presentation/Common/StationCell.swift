@@ -11,6 +11,8 @@ import Stevia
 import Kingfisher
 
 class StationCell: UICollectionViewCell {
+    static let identifier = "StationCell"
+    
     let imageView = UIImageView()
     let infoLabel = UILabel()
     let nameLabel = UILabel()
@@ -111,7 +113,7 @@ class StationCell: UICollectionViewCell {
         
         task?.cancel()
         task = imageView.kf.setImage(with: url,
-                                     placeholder: UIImage(systemName: "music.note.house"),
+                                     placeholder: UIImage(systemName: "music.note.list"),
                                      options: [ .transition(.fade(0.3)) ])
         
         

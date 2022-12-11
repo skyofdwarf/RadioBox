@@ -53,6 +53,10 @@ class PlayerViewController: UIViewController {
         bindViewModel()
     }
     
+    @objc func playButtonDidTap(_ sender: Any) {
+        vm.player.toggle()
+    }
+    
     func configureSubviews() {
         imageView.contentMode = .scaleAspectFit
         imageView.clipsToBounds = true
@@ -95,13 +99,16 @@ class PlayerViewController: UIViewController {
         playButton.setImage(playImage, for: .normal)
         playButton.tintColor = .label
         
-        let action = UIAction { [weak self] _ in
-            self?.vm.player.toggle()
-        }
-        playButton.addAction(action, for: .touchUpInside)
+        playButton.addTarget(self, action: #selector(playButtonDidTap(_:)), for: .touchUpInside)
         
         minVolumeImageView.image = UIImage(systemName: "speaker.fill")
-        maxVolumeImageView.image = UIImage(systemName: "speaker.wave.3.fill")
+        if #available(iOS 14, *) {
+            maxVolumeImageView.image = UIImage(systemName: "speaker.wave.3.fill")
+            maxVolumeImageView.isHidden = false
+        } else {
+            maxVolumeImageView.image = nil
+            maxVolumeImageView.isHidden = true
+        }
         minVolumeImageView.tintColor = .systemGray2
         maxVolumeImageView.tintColor = .systemGray2
         
@@ -285,7 +292,7 @@ class PlayerViewController: UIViewController {
         vm.player.streamArtworkPublisher
             .sink { [weak self] url in
                 self?.imageView.kf.setImage(with: url,
-                                           placeholder: UIImage(systemName: "music.note.house"),
+                                           placeholder: UIImage(systemName: "music.note.list"),
                                            options: [ .transition(.fade(0.3)) ])
             }.store(in: &cbag)
         

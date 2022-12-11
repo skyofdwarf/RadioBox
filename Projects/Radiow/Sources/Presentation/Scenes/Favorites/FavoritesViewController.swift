@@ -28,8 +28,16 @@ class FavoritesViewController: UIViewController {
     init() {
         super.init(nibName: nil, bundle: nil)
         
+        let tabImage: UIImage? = {
+            if #available(iOS 14, *) {
+                return UIImage(systemName: "bookmark.circle")
+            } else {
+                return UIImage(systemName: "book.circle")
+            }
+        }()
+        
         tabBarItem = UITabBarItem(title: "Favorites",
-                                  image: UIImage(systemName: "bookmark.circle"),
+                                  image: tabImage,
                                   tag: 0)
     }
     
@@ -60,6 +68,8 @@ class FavoritesViewController: UIViewController {
         cv.delegate = self
         cv.backgroundColor = .systemBackground
         cv.keyboardDismissMode = .interactive
+        cv.register(StationCell.self, forCellWithReuseIdentifier: StationCell.identifier)
+        cv.register(StationSectionHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: StationSectionHeaderView.identifier)
         
         dataSource = createDataSource()
         
@@ -138,33 +148,33 @@ extension FavoritesViewController {
     }
     
     func createDataSource() -> UICollectionViewDiffableDataSource<Section, RadioStation> {
-        let stationCellRegistration = UICollectionView.CellRegistration<StationCell, RadioStation>
-        { (cell, indexPath, station) in
-            cell.configure(station: station)
-            cell.toggleFavorites = { [weak self] _ in
-                self?.vm.send(action: .remove(station))
-            }
-        }
-        
         return UICollectionViewDiffableDataSource(collectionView: cv)
-        { (collectionView, indexPath, identifier) in
+        { (collectionView, indexPath, station) -> UICollectionViewCell? in
             guard let section = Section(rawValue: indexPath.section) else { return nil }
             
             switch section {
             case .mostVoted:
-                return collectionView.dequeueConfiguredReusableCell(using: stationCellRegistration, for: indexPath, item: identifier)
+                guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: StationCell.identifier, for: indexPath) as? StationCell
+                else { return nil }
+                cell.configure(station: station)
+                cell.toggleFavorites = { [weak self] _ in
+                    self?.vm.send(action: .remove(station))
+                }
+                return cell
             }
         }.then {
-            let headerRegistration = UICollectionView.SupplementaryRegistration<StationSectionHeaderView>(elementKind: UICollectionView.elementKindSectionHeader) {
-                (view, kind, indexPath) in
-                
-                guard let section = Section(rawValue: indexPath.section) else { return }
-                
-                view.configure(title: section.title)
-            }
-            
             $0.supplementaryViewProvider = { (cv, kind, indexPath) in
-                return cv.dequeueConfiguredReusableSupplementary(using: headerRegistration, for: indexPath)
+                guard let header = cv.dequeueReusableSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader,
+                                                    withReuseIdentifier: StationSectionHeaderView.identifier,
+                                                                       for: indexPath) as? StationSectionHeaderView,
+                      let section = Section(rawValue: indexPath.section)
+                else {
+                    return nil
+                }
+                
+                header.configure(title: section.title)
+                
+                return header
             }
         }
     }
