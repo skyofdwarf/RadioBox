@@ -226,7 +226,7 @@ extension FavoritesViewController {
         return UICollectionViewCompositionalLayout { section, environment in
             switch Section(rawValue: section) {
             case .mostVoted:
-                return NSCollectionLayoutSection.stationList(itemCountInRow: 2)
+                return NSCollectionLayoutSection.stationList(itemCountInRow: 2, environment: environment)
             default:
                 fatalError("No definition for section \(section)")
             }

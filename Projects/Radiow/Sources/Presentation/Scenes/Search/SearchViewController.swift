@@ -217,7 +217,7 @@ extension SearchViewController {
         return UICollectionViewCompositionalLayout { section, environment in
             switch Section(rawValue: section) {
             case .mostVoted:
-                return NSCollectionLayoutSection.stationList(itemCountInRow: 3)
+                return NSCollectionLayoutSection.stationList(itemCountInRow: 3, environment: environment)
             default:
                 fatalError("No definition for section \(section)")
             }

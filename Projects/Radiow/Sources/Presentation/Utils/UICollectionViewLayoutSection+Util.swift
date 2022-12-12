@@ -10,11 +10,12 @@ import UIKit
 import Then
 
 extension NSCollectionLayoutSection {
-    static func stationList(itemCountInRow: @autoclosure () -> Double) -> NSCollectionLayoutSection {
+    static func stationList(itemCountInRow: @autoclosure () -> Double, environment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection {
+        let itemCountInRow = environment.traitCollection.verticalSizeClass == .compact ? itemCountInRow() * 2: itemCountInRow()
         let sectionInset = 10.0
         let itemSpacing = 5.0
-        let contentWidth = UIScreen.main.bounds.width - (sectionInset * 2) - (itemSpacing * itemCountInRow() - 1)
-        let itemWidth = floor(contentWidth / itemCountInRow())
+        let contentWidth = environment.container.effectiveContentSize.width - (sectionInset * 2) - (itemSpacing * itemCountInRow - 1)
+        let itemWidth = floor(contentWidth / itemCountInRow)
         let itemHeight = itemWidth + 40
         
         let itemSize = NSCollectionLayoutSize(widthDimension: .absolute(itemWidth),
