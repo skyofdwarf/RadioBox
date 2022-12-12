@@ -144,10 +144,6 @@ class PlayerViewController: UIViewController {
             infoStackView
         }
         
-//        imageView.subviews {
-//            favoriteButton
-//        }
-
         controlContainerView.subviews {
             titleLabel
             artistLabel

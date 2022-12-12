@@ -39,7 +39,9 @@ extension Project {
             "UIMainStoryboardFile": "",
             "UILaunchStoryboardName": "LaunchScreen",
             "NSAppTransportSecurity": .dictionary(["NSAllowsArbitraryLoads": .boolean(true)]),
-            "UIBackgroundModes": .array(["audio"])
+            "UIBackgroundModes": .array(["audio"]),
+            "UISupportedInterfaceOrientations": .array(["UIInterfaceOrientationPortrait"]),
+            "UISupportedInterfaceOrientations~ipad": .array(["UIInterfaceOrientationPortrait", "UIInterfaceOrientationPortraitUpsideDown"]),
             ]
 
         let mainTarget = Target(
