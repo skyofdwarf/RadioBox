@@ -26,12 +26,11 @@ extension PlayerStatus {
 }
 
 class PlayerBar: UIToolbar {
-    static let barHeight: CGFloat = 60
-    
     let playButton: UIButton
     let faviconImageView: UIImageView
     let artistLabel: UILabel
     let titleLabel: UILabel
+    let infoStackView = UIStackView()
     
     var player: Player?
     
@@ -54,32 +53,42 @@ class PlayerBar: UIToolbar {
             $0.lineBreakMode = .byTruncatingTail
         }
         artistLabel = UILabel().then {
-            $0.font = UIFont.preferredFont(forTextStyle: .callout)
+            $0.font = UIFont.preferredFont(forTextStyle: .footnote)
             $0.textColor = .secondaryLabel
             $0.lineBreakMode = .byTruncatingTail
         }
-        
+
         super.init(frame: frame)
+        
+        infoStackView.addArrangedSubview(titleLabel)
+        infoStackView.addArrangedSubview(artistLabel)
+        configureInfoStackByCurrentTrait()
         
         setup()
     }
     
-    override var intrinsicContentSize: CGSize {
-        CGSize(width: .zero, height: Self.barHeight)
-    }
-
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func sizeThatFits(_ size: CGSize) -> CGSize {
-        var size = super.sizeThatFits(size)
-        size.height = Self.barHeight
-        return size
-    }
-    
     @objc func playButtonDidTap(_ sender: Any) {
         player?.toggle()
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        
+        configureInfoStackByCurrentTrait()
+    }
+    
+    func configureInfoStackByCurrentTrait() {
+        if traitCollection.verticalSizeClass == .compact {
+            infoStackView.axis = .horizontal
+            infoStackView.spacing = 10
+        } else {
+            infoStackView.axis = .vertical
+            infoStackView.spacing = 2
+        }
     }
     
     func setup() {
@@ -89,11 +98,6 @@ class PlayerBar: UIToolbar {
             $0.clipsToBounds = true
         }
         let faviconContainer = UIView()
-        
-        let infoStackView = UIStackView(arrangedSubviews: [titleLabel, artistLabel]).then {
-            $0.axis = .vertical
-            $0.spacing = 4
-        }
         
         subviews {
             container.subviews {
@@ -106,9 +110,9 @@ class PlayerBar: UIToolbar {
         }
         
         container.layout {
-            5
-            |-10-faviconContainer-infoStackView-playButton|
-            5
+            2
+            |-10-faviconContainer-infoStackView-(>=0)-playButton|
+            2
         }
 
         faviconContainer.heightEqualsWidth()
@@ -119,8 +123,12 @@ class PlayerBar: UIToolbar {
         faviconImageView.CenterX == faviconContainer.CenterX
         faviconImageView.CenterY == faviconContainer.CenterY
 
-        container.fillContainer()
-        playButton.size(Self.barHeight)
+        container.Leading == safeAreaLayoutGuide.Leading
+        container.Trailing == safeAreaLayoutGuide.Trailing
+        container.top(0).bottom(0)
+        
+        playButton.Height == container.Height
+        playButton.Width == container.Height
     }
     
     func updatePlayButton(status: PlayerStatus) {
