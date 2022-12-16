@@ -27,7 +27,7 @@ enum FavoritesMutation {
     
     case filterKeyword(String?)
     case filteredStations([RadioStation])
-    case hasNextPage(Bool)
+    case fetched(Bool)
 }
 
 enum FavoritesEvent {
@@ -50,7 +50,7 @@ struct FavoritesState {
     var stations: [RadioStation] = []
     var filterKeyword: String?
     
-    var hasNextPage = true
+    var fetched = false
 }
 
 final class FavoritesViewModel: CoordinatingViewModel<FavoritesAction, FavoritesMutation, FavoritesEvent, FavoritesState> {
@@ -90,8 +90,8 @@ final class FavoritesViewModel: CoordinatingViewModel<FavoritesAction, Favorites
             state.fetching = fetching
         case .stations(let stations):
             state.stations += stations
-        case .hasNextPage(let hasNextPage):
-            state.hasNextPage = hasNextPage
+        case .fetched(let fetched):
+            state.fetched = fetched
         case .add(let station):
             if !state.stations.contains(station) {
                 state.stations.append(station)
@@ -115,7 +115,11 @@ final class FavoritesViewModel: CoordinatingViewModel<FavoritesAction, Favorites
     override func transform(mutation: Observable<FavoritesMutation>) -> Observable<FavoritesMutation> {
         let changes = favoritesService.changes
             .asObservable()
-            .flatMap({ changes -> Observable<FavoritesMutation> in
+            .flatMap({ [weak self] changes -> Observable<FavoritesMutation> in
+                guard self?.$state.fetched ?? false
+                else {
+                    return .empty()
+                }
                 switch changes {
                 case .added(let station):
                     return .just(.add(station))
@@ -161,7 +165,7 @@ extension FavoritesViewModel {
     func fetchFavorites() -> Observable<Reaction> {
         guard favoritesService.available,
               !state.fetching,
-              state.hasNextPage
+              !state.fetched
         else {
             return .empty()
         }
@@ -175,9 +179,8 @@ extension FavoritesViewModel {
             }
             
             let stations = self.favoritesService.fetch(paging: (offset: offset, limit: limit))
-            let hasNextPage = stations.count >= Constant.PageLimit
             
-            observer.onNext(.mutation(.hasNextPage(hasNextPage)))
+            observer.onNext(.mutation(.fetched(true)))
             observer.onNext(.mutation(.stations(stations)))
             observer.onNext(.mutation(.filteredStations(stations)))
             observer.onCompleted()
