@@ -22,6 +22,8 @@ class StationViewController: UIViewController {
     let stationSpecLabel = UILabel()
     let stationTagsLabel = UILabel()
     
+    let favoriteButton = UIButton(type: .custom)
+    
     var vm: StationViewModel!
     
     private(set) var dbag = DisposeBag()
@@ -64,6 +66,19 @@ class StationViewController: UIViewController {
         stationTagsLabel.textAlignment = .center
         stationTagsLabel.numberOfLines = 3
         
+        let symbolConfiguration = UIImage.SymbolConfiguration(textStyle: .headline, scale: .large)
+        
+        //favoriteButton.addTarget(self, action: #selector(favoriteButtonDidTap(_:)), for: .touchUpInside)
+        favoriteButton.setPreferredSymbolConfiguration(symbolConfiguration, forImageIn: .normal)
+        favoriteButton.setPreferredSymbolConfiguration(symbolConfiguration, forImageIn: .selected)
+        favoriteButton.setImage(UIImage(systemName: "bookmark"), for: .normal)
+        favoriteButton.setImage(UIImage(systemName: "bookmark.fill"), for: .selected)
+        favoriteButton.tintColor = .systemRed
+        favoriteButton.backgroundColor = .systemRed.withAlphaComponent(0.2)
+        favoriteButton.layer.cornerRadius = 38/2
+        favoriteButton.layer.borderColor = UIColor.systemRed.cgColor
+        favoriteButton.layer.borderWidth = 2
+        
         layoutSubviews()
     }
     
@@ -82,6 +97,12 @@ class StationViewController: UIViewController {
             imageView
             stationInfoStackView
         }
+        
+        imageView.subviews {
+            favoriteButton
+        }
+        
+        favoriteButton.top(0).right(0).size(38)
         
         stationInfoStackView.addArrangedSubview(stationNameLabel)
         stationInfoStackView.addArrangedSubview(stationSpecLabel)
@@ -113,6 +134,8 @@ class StationViewController: UIViewController {
                 let info = [station.codec, String(station.bitrate), station.country]
                     .filter { !$0.trimmingCharacters(in: CharacterSet.whitespaces).isEmpty }
                     .joined(separator: " / ")
+                
+                this.favoriteButton.isSelected = station.favorited
                 
                 this.stationNameLabel.text = station.name
                 this.stationSpecLabel.text = info

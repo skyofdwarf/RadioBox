@@ -45,7 +45,8 @@ final class FavoritesCoordinator: Coordinator {
         case .station(let station):
             createStationCoordinator(with: station).start()
         case .pop(let vc):
-            target?.present(vc, animated: true)
+            guard let stationVC = vc as? StationViewController else { return }
+            target?.navigationController?.pushViewController(stationVC, animated: true)
         }
     }
 }

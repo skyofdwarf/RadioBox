@@ -253,19 +253,23 @@ extension SearchViewController: UICollectionViewDelegate {
             return nil
         }
         
-        return coordinator.contextMenu(for: station)
+        let playStation = UIAction(title: "Play") { [weak self] _ in
+            self?.vm.send(action: .play(station))
+        }
+
+        return coordinator.contextMenu(for: station, actions: [playStation])
     }
     
-    func collectionView(_ collectionView: UICollectionView, willPerformPreviewActionForMenuWith configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionCommitAnimating) {
-        guard let vc = animator.previewViewController else {
-            return
-        }
-        
-        animator.addCompletion { [weak self] in
-            guard let coordinator = self?.vm.coordinator as? SearchCoordinator else { return }
-            coordinator.coordinate(.pop(vc))
-        }
-    }
+//    func collectionView(_ collectionView: UICollectionView, willPerformPreviewActionForMenuWith configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionCommitAnimating) {
+//        guard let vc = animator.previewViewController else {
+//            return
+//        }
+//
+//        animator.addCompletion { [weak self] in
+//            guard let coordinator = self?.vm.coordinator as? SearchCoordinator else { return }
+//            coordinator.coordinate(.pop(vc))
+//        }
+//    }
 }
 
 // MARK: UISearchBarDelegate

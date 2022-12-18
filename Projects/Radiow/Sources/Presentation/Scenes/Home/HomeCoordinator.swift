@@ -52,13 +52,15 @@ final class HomeCoordinator: Coordinator {
 }
 
 extension Coordinator where Target: UIViewController {
-    func contextMenu(for station: RadioStation) -> UIContextMenuConfiguration? {
+    func contextMenu(for station: RadioStation, actions: [UIMenuElement] = []) -> UIContextMenuConfiguration? {
         UIContextMenuConfiguration(identifier: station.stationuuid as NSString,
                                    previewProvider: { [weak self] () -> UIViewController? in
             guard let self else { return nil }
 
             return self.createStationCoordinator(with: station).instantiateTarget()
-        }, actionProvider: nil)
+        }, actionProvider: { _ in
+            return UIMenu(children: actions)
+        })
     }
     
     func createStationCoordinator(with station: RadioStation) -> StationCoordinator {
