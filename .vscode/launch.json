@@ -1,0 +1,36 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug",
+            "program": "${workspaceFolder}/build/Debug-${command:ios-debug.targetSdk}/Radiow.app",
+            "iosBundleId": "com.dwarfini.Radiow",
+            "iosTarget": "select",
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug tuist-my-cli (Plugins/Radiow)",
+            "program": "${workspaceFolder:Radiow}/Plugins/Radiow/.build/debug/tuist-my-cli",
+            "args": [],
+            "cwd": "${workspaceFolder:Radiow}/Plugins/Radiow",
+            "preLaunchTask": "swift: Build Debug tuist-my-cli (Plugins/Radiow)"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Release tuist-my-cli (Plugins/Radiow)",
+            "program": "${workspaceFolder:Radiow}/Plugins/Radiow/.build/release/tuist-my-cli",
+            "args": [],
+            "cwd": "${workspaceFolder:Radiow}/Plugins/Radiow",
+            "preLaunchTask": "swift: Build Release tuist-my-cli (Plugins/Radiow)"
+        }
+    ]
+}
