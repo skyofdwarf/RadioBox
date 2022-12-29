@@ -78,9 +78,14 @@ class RadioPlayer: NSObject, Player {
         }
         playerItem?.removeObserver(self, forKeyPath: "status")
         playerItem = nil
+     
+        // NOTE: Do not pause player
+        // Calling `pause()` on the player and then calling `play()` will emit
+        // `TimeControlStatus.paused` after `TimeControlStatus.waitingToPlayAtSpecifiedRate`,
+        // causing Play button to display wrong image.
         
-        player.pause()
-        player.cancelPendingPrerolls()
+//        player.pause()
+//        player.cancelPendingPrerolls()
     }
     
     func play(station: RadioStation) {
